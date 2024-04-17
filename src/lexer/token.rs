@@ -42,15 +42,32 @@ pub enum Token<'a> {
     Whitespace
 }
 
-impl<'a> From<&'a str> for Token<'a> {
-    fn from(value: &'a str) -> Self {
-        match value {
+impl<'a> Token<'a> {
+    pub fn needs_space(&self) -> bool {
+        use Token::*;
+
+        !matches!(
+            self, 
+            OpenParen | CloseParen | OpenBracket | CloseBracket | OpenBraces | CloseBraces
+            | Whitespace
+        )
+    }
+
+    pub fn try_single(item: &'a str) -> Option<Token<'a>> {
+        Some(match item {
             "(" => Token::OpenParen,
             ")" => Token::CloseParen,
             "[" => Token::OpenBracket,
             "]" => Token::CloseBracket,
             "{" => Token::OpenBraces,
             "}" => Token::CloseBraces,
+            " " => Token::Whitespace,
+            _ => return None
+        })
+    }
+
+    pub fn multiple(item: &'a str) -> Token<'a> {
+        match item {
             "if" => Token::If,
             "cond" => Token::Cond,
             "else" => Token::Else,
@@ -61,7 +78,6 @@ impl<'a> From<&'a str> for Token<'a> {
             "begin" => Token::Begin,
             "when" => Token::When,
             "unless" => Token::Unless,
-            " " => Token::Whitespace,
             other => {
                 if let Some(data) = DataType::parse(other) {
                     Token::Primitive(data)

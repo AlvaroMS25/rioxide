@@ -1,31 +1,30 @@
 mod token;
 
-use std::str::Lines;
+use std::{iter::{Enumerate, Map}, path::Iter, str::{Chars, Lines}};
 
 use token::Token;
 
 pub struct LocatedToken<'a> {
     line: u32,
-    column: u32,
     token: Token<'a>
 }
 
 pub struct Lexer<'a> {
-    inner: Lines<'a>
+    iter: Enumerate<Lines<'a>>
 }
 
 impl<'a> Lexer<'a> {
-    pub fn new(lines: Lines<'a>) -> Self{
+    pub fn new(iter: Enumerate<Lines<'a>>) -> Self{
         Self {
-            inner: lines
+            iter
         }
     }
 
-    pub fn parse_tokens(mut self) -> Vec<LocatedToken<'a>> {
+    /*pub fn parse_tokens(self) -> Vec<LocatedToken<'a>> {
         let mut out = Vec::new();
 
         for (line, content) in self.inner.enumerate() {
-            let mut current_line = content.split(" ").enumerate();
+            let current_line = content.split(" ").enumerate();
 
             if let Some(hint) = current_line.size_hint().1 {
                 out.reserve(hint); // reserve if known length
@@ -38,6 +37,54 @@ impl<'a> Lexer<'a> {
                     token: Token::from(chunk)
                 })
             }
+        }
+
+        out
+    }*/
+
+    fn parse_line(line_idx: u32, line: &'a str) -> Vec<LocatedToken<'a>> {
+        let mut curr_index = 0;
+
+        let mut out = Vec::new();
+        
+        if line.is_empty() {
+            return out;
+        }
+
+        while curr_index < line.len() {
+            let mut current_chunk = &line[curr_index..curr_index+1];
+
+            if let Some(token) = Token::try_single(current_chunk) {
+                out.push(LocatedToken {
+                    line: line_idx,
+                    token
+                });
+
+                continue;
+            }
+
+            if let Some(space_idx) = (&line[curr_index..]).find(" ") {
+                current_chunk = &line[curr_index..space_idx];
+                curr_index = space_idx;
+            } else {
+                current_chunk = &line[curr_index..];
+                curr_index += 1;
+            }
+
+            out.push(LocatedToken {
+                line: line_idx,
+                token: Token::multiple(current_chunk)
+            });
+        }
+
+        out
+    }
+
+    pub fn parse(self) -> Vec<LocatedToken<'a>> {
+        let mut out = Vec::new();
+
+        for(line, c) in self.iter {
+            out.extend(Self::parse_line(line as _, c));
         }
 
         out

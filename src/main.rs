@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, iter::Enumerate, str::Chars};
 
 use crate::lexer::Lexer;
 
@@ -15,7 +15,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let file = std::fs::read_to_string(filename)?;
 
-    let _tokens = Lexer::new(file.lines()).parse_tokens();
+    let iter = file.lines().enumerate();
+
+    let _tokens = Lexer::new(iter);
     
     handle.shutdown();
 
