@@ -27,11 +27,11 @@ pub enum Token<'a> {
     /// let
     Let,
     /// let*
-    LetAskterisk,
+    LetAsterisk,
     /// for
     For,
     /// for*
-    ForAskterisk,
+    ForAsterisk,
     /// begin
     Begin,
     /// when
@@ -55,9 +55,9 @@ impl<'a> From<&'a str> for Token<'a> {
             "cond" => Token::Cond,
             "else" => Token::Else,
             "let" => Token::Let,
-            "let*" => Token::LetAskterisk,
+            "let*" => Token::LetAsterisk,
             "for" => Token::For,
-            "for*" => Token::ForAskterisk,
+            "for*" => Token::ForAsterisk,
             "begin" => Token::Begin,
             "when" => Token::When,
             "unless" => Token::Unless,
