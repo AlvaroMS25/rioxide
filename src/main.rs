@@ -7,17 +7,18 @@ mod primitives;
 mod cli;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    println!("Hello, world!");
     let handle = wpool::builder::WorkerPoolBuilder::new()
         .build_owned().unwrap();
 
-    let filename = "juan";
+    let filename = "testfile.rkt";
 
     let file = std::fs::read_to_string(filename)?;
 
     let iter = file.lines().enumerate();
 
-    let _tokens = Lexer::new(iter);
+    let tokens = Lexer::new(iter).parse();
+
+    println!("{:?}", tokens);
     
     handle.shutdown();
 

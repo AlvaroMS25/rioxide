@@ -1,6 +1,7 @@
 use crate::primitives::DataType;
 
 /// Tokens used on racket
+#[derive(Debug)]
 pub enum Token<'a> {
     /// (
     OpenParen, 

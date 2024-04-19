@@ -4,6 +4,7 @@ use std::{iter::{Enumerate, Map}, path::Iter, str::{Chars, Lines}};
 
 use token::Token;
 
+#[derive(Debug)]
 pub struct LocatedToken<'a> {
     line: u32,
     token: Token<'a>
@@ -43,6 +44,7 @@ impl<'a> Lexer<'a> {
     }*/
 
     fn parse_line(line_idx: u32, line: &'a str) -> Vec<LocatedToken<'a>> {
+        println!("LINE: {line}");
         let mut curr_index = 0;
 
         let mut out = Vec::new();
@@ -52,7 +54,9 @@ impl<'a> Lexer<'a> {
         }
 
         while curr_index < line.len() {
+            println!("Current idx: {curr_index}");
             let mut current_chunk = &line[curr_index..curr_index+1];
+            println!("Sliced, chunk: {:?}", current_chunk);
 
             if let Some(token) = Token::try_single(current_chunk) {
                 out.push(LocatedToken {
@@ -60,12 +64,19 @@ impl<'a> Lexer<'a> {
                     token
                 });
 
+                curr_index += 1;
                 continue;
             }
 
+            if (&line[curr_index..]).starts_with("\"") {
+                
+            }
+
+            println!("Not single");
+
             if let Some(space_idx) = (&line[curr_index..]).find(" ") {
-                current_chunk = &line[curr_index..space_idx];
-                curr_index = space_idx;
+                current_chunk = &line[curr_index..=space_idx];
+                curr_index = space_idx + 1;
             } else {
                 current_chunk = &line[curr_index..];
                 curr_index += 1;
@@ -75,6 +86,8 @@ impl<'a> Lexer<'a> {
                 line: line_idx,
                 token: Token::multiple(current_chunk)
             });
+
+            println!("Pushed: {:?}", out.last().unwrap());
         }
 
         out
