@@ -1,8 +1,12 @@
+mod cursor;
+mod error;
 mod token;
 
 use std::{iter::{Enumerate, Map}, path::Iter, str::{Chars, Lines}};
 
 use token::Token;
+
+use self::{cursor::Cursor, error::LexerError};
 
 #[derive(Debug)]
 pub struct LocatedToken<'a> {
@@ -11,13 +15,13 @@ pub struct LocatedToken<'a> {
 }
 
 pub struct Lexer<'a> {
-    iter: Enumerate<Lines<'a>>
+    cursor: Cursor<'a>
 }
 
 impl<'a> Lexer<'a> {
-    pub fn new(iter: Enumerate<Lines<'a>>) -> Self{
+    pub fn new(buf: &'a str) -> Self{
         Self {
-            iter
+            cursor: Cursor::new(buf)
         }
     }
 
@@ -42,6 +46,26 @@ impl<'a> Lexer<'a> {
 
         out
     }*/
+
+    pub fn parse_all(mut self) -> Result<Vec<LocatedToken<'a>>, LexerError> {
+        let mut out = Vec::new();
+
+        while self.cursor.remaining().len() > 0 {
+            out.push(self.cursor.parse_with::<_, LexerError, _>(|buf| {
+                if buf.is_empty() {
+                    return Err(LexerError::Eof);
+                }
+
+                if let Some(single) = Token::try_single(&buf[0..1]) {
+                    return Ok(single);
+                }
+
+                Ok(Token::multiple(buf))
+            })?);
+        }
+
+        Ok(out)
+    }
 
     fn parse_line(line_idx: u32, line: &'a str) -> Vec<LocatedToken<'a>> {
         println!("LINE: {line}");
@@ -93,13 +117,7 @@ impl<'a> Lexer<'a> {
         out
     }
 
-    pub fn parse(self) -> Vec<LocatedToken<'a>> {
-        let mut out = Vec::new();
-
-        for(line, c) in self.iter {
-            out.extend(Self::parse_line(line as _, c));
-        }
-
-        out
+    pub fn parse(self) -> Result<Vec<LocatedToken<'a>>, LexerError> {
+        self.parse_all()
     }
 }
