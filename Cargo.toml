@@ -10,4 +10,5 @@ clap = { version = "4.5.4", features = ["derive"] }
 lazy_static = "1.4.0"
 pcre2 = "0.2.7"
 regex = "1.10.4"
+thiserror = "1.0.59"
 wpool = { git = "https://github.com/AlvaroMS25/wpool.git" }

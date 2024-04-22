@@ -19,7 +19,6 @@ pub struct Lexer<'a> {
 }
 
 fn remove_last_tokens<'a>(item: &'a str) -> &'a str {
-    println!("Item in: {}", item);
     if item.len() <= 1 {
         return item;
     }
@@ -31,6 +30,20 @@ fn remove_last_tokens<'a>(item: &'a str) -> &'a str {
     }
 
     &item[..=finish_at]
+}
+
+fn remove_incoming_tokens<'a>(item: &'a str) -> &'a str {
+    let mut idx = 0;
+
+    while idx < item.len() && Token::try_single(&item[idx..idx+1]).is_none() {
+        idx += 1;
+    }
+
+    &item[..=idx]
+}
+
+fn remove_single_tokens<'a>(item: &'a str) -> &'a str {
+    remove_last_tokens(remove_incoming_tokens(item))
 }
 
 impl<'a> Lexer<'a> {
@@ -75,7 +88,7 @@ impl<'a> Lexer<'a> {
                     return Ok(single);
                 }
 
-                Ok(Token::multiple(remove_last_tokens(buf)))
+                Ok(Token::multiple(remove_single_tokens(buf)))
             })?);
         }
 
