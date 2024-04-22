@@ -4,7 +4,9 @@ use primitives::DataType;
 
 use crate::lexer::Lexer;
 
+mod ast;
 mod lexer;
+mod parser;
 mod primitives;
 mod cli;
 mod macros;

@@ -20,7 +20,7 @@ impl<'a> LexerCursor<'a> {
     }
 
     fn update_line(&mut self) {
-        let mut line = 0;
+        let mut line = 1;
 
         let mut newlines = self.buf.as_bytes().iter()
             .enumerate()
@@ -80,7 +80,7 @@ impl<'a> LexerCursor<'a> {
             self.buf_position += token.token_len();
         }
 
-        let ret = res.map(|t| LocatedToken { line: (self.line + 1) as u32, token: t });
+        let ret = res.map(|t| LocatedToken { line: self.line as u32, token: t });
 
         self.update_line();
 
