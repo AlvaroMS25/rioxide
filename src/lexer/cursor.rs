@@ -46,8 +46,28 @@ impl<'a> Cursor<'a> {
         self.line = line;
     }
 
-    pub fn remaining(&self) -> &'a str {
-        &self.buf[self.buf_position..]
+    fn ignore_newline(&mut self) -> &'a str {
+        if self.buf[self.buf_position..].len() < 1 {
+            return &self.buf[self.buf_position..];
+        }
+
+        let mut item = &self.buf[self.buf_position..];
+        while item.len() > 1 && (&item[0..1] == "\n" || &item[0..1] == "\r") {
+            item = &item[1..];
+            self.buf_position += 1;
+        }
+
+        let mut finish = item.len();
+
+        while finish > 0 && (&item[finish-1..finish] == "\n" || &item[finish-1..finish] == "\r") {
+            finish -= 1;
+        }
+
+        &item[..finish]
+    }
+
+    pub fn remaining(&mut self) -> &'a str {
+        self.ignore_newline()
     }
 
     pub fn parse_with<F, R, E>(&mut self, fun: F) -> Result<LocatedToken<'a>, E>
@@ -60,7 +80,7 @@ impl<'a> Cursor<'a> {
             self.buf_position += token.token_len();
         }
 
-        let ret = res.map(|t| LocatedToken { line: self.line as _, token: t });
+        let ret = res.map(|t| LocatedToken { line: (self.line + 1) as u32, token: t });
 
         self.update_line();
 

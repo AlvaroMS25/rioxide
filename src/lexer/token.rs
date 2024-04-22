@@ -15,6 +15,8 @@ pub enum Token<'a> {
     OpenBraces,
     /// }
     CloseBraces,
+    /// '
+    SingleQuote,
     /// Primitive data type
     Primitive(DataType<'a>),
     /// Function usage
@@ -48,7 +50,7 @@ impl<'a> Token<'a> {
         use Token::*;
         
         match self {
-            OpenParen | CloseParen | OpenBracket | CloseBracket | OpenBraces | CloseBraces
+            OpenParen | CloseParen | OpenBracket | CloseBracket | OpenBraces | CloseBraces | SingleQuote
             | Whitespace => 1,
             Ident(f) => f.len(),
             Primitive(p) => p.len(),
@@ -80,6 +82,7 @@ impl<'a> Token<'a> {
             "]" => Token::CloseBracket,
             "{" => Token::OpenBraces,
             "}" => Token::CloseBraces,
+            "'" => Token::SingleQuote,
             " " => Token::Whitespace,
             _ => return None
         })

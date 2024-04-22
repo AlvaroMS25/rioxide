@@ -25,7 +25,6 @@ pub enum DataType<'a> {
     Binary(LiteralNumber<'a>),
     Bytes(Cow<'a, [u8]>),
     Boolean(bool),
-    Symbol(&'a str)
 }
 
 #[derive(Debug)]
@@ -71,8 +70,7 @@ impl<'a> DataType<'a> {
             Double(d) => len_num(*d),
             Hex(n) | Octal(n) | Binary(n) => n.inner.len(),
             Bytes(b) => len_u8buf(&b.as_ref()),
-            Boolean(_) => 2, // #t r #f
-            Symbol(s) => s.len()
+            Boolean(_) => 2, // #t or #f
         }
     }
 
@@ -80,7 +78,6 @@ impl<'a> DataType<'a> {
         let first = item.chars().next()?;
 
         match first {
-            '\'' => Some(DataType::Symbol(item)),
             '#' => Self::parse_prefixed(item),
             '"' => Self::parse_str(item).map(DataType::String),
             _ if item.chars().filter(|c| c.is_numeric()).next().is_some() => Self::parse_number(item),

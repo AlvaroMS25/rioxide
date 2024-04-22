@@ -1,5 +1,6 @@
 use std::{error::Error, iter::Enumerate, str::Chars};
 
+use lexer::cursor::Cursor;
 use primitives::DataType;
 
 use crate::lexer::Lexer;
@@ -25,7 +26,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    println!("{:#?}", tokens);
+    println!("{:?}", tokens);
     
     handle.shutdown();
 

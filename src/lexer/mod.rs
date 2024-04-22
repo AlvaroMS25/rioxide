@@ -1,4 +1,4 @@
-mod cursor;
+pub mod cursor;
 mod error;
 mod token;
 
@@ -19,14 +19,22 @@ pub struct Lexer<'a> {
 }
 
 fn remove_last_token<'a>(item: &'a str) -> &'a str {
-    println!("Trying to remove last token: '{}'", &item[item.len()-1 ..]);
+    let mut last_idx = item.len() - 1;
+    while let Some(token) = Token::try_single(&item[last_idx.. last_idx + 1]) {
+        last_idx -= token.token_len();
+        println!("Last idx is now {} | Parsed: {:?}", last_idx, token);
+    }
+
+    &item[..last_idx]
+
+    /*println!("Trying to remove last token: '{}'", &item[item.len()-1 ..]);
     if let Some(t) = Token::try_single(&item[item.len()-1 ..]) {
         let removed = &item[0.. item.len() - t.token_len()];
         println!("Removed last token, final: '{}'", removed);
         removed
     } else {
         item
-    }
+    }*/
 }
 
 impl<'a> Lexer<'a> {
