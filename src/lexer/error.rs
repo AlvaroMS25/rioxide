@@ -1,5 +1,10 @@
+use thiserror::Error;
+
+#[derive(Debug, Error)]
 pub enum LexerError {
+    #[error("Option got None")]
     OptionNone,
+    #[error("End of file")]
     Eof
 }
 
