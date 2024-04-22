@@ -64,9 +64,14 @@ impl<'a> DataType<'a> {
             Integer(i) => len_num(*i),
             Rational(r) => len_num(r.left) + len_num(r.right) + 1, // +1 for "/" character
             Complex(c) => len_num(c.real) 
-                + len_num_f64_no_sign(c.imaginary as _) + 2
-                + if c.includes_prefix { 1 } else { 0 }, // +2 for the sign and i
-            Floating(f) => len_num(*f),
+                + len_num(c.imaginary) + 1 // + 1 for i
+                + if c.includes_prefix { 1 } else { 0 } // +1 if the number is prefixed with "+"
+                + if c.imaginary > 0 { 1 } else { 0 }, // +1 if the imaginary part is positive, because len_num does not detect it
+            Floating(f) => {
+                let l = len_num(*f);
+                println!("floating with value: {f}, len: {l}");
+                l
+            },
             Double(d) => len_num(*d),
             Hex(n) | Octal(n) | Binary(n) => n.inner.len(),
             Bytes(b) => len_u8buf(&b.as_ref()),
@@ -206,21 +211,12 @@ fn len_u8buf<B: AsRef<[u8]>>(item: &B) -> usize {
 
 fn len_num<T>(item: T) -> usize
 where
-    f64: From<T>
+    T: ToString
 {
-    len_num_f64_sign(f64::from(item))
+    item.to_string().len()
 }
 
-fn len_num_f64_no_sign(num: f64) -> usize {
-    num.abs().log10().floor() as usize + 1
-}
-
-fn len_num_f64_sign(num: f64) -> usize {
-    let sum = if num < 0.0 {
-        1
-    } else {
-        0
-    };
-
-    len_num_f64_no_sign(num) + sum
+#[test]
+fn test_len() {
+    println!("{}", (3.2f64).to_string().len());
 }

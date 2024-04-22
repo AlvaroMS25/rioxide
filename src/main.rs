@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    println!("{:?}", tokens);
+    println!("{:#?}", tokens);
     
     handle.shutdown();
 

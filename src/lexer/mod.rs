@@ -39,7 +39,7 @@ fn remove_incoming_tokens<'a>(item: &'a str) -> &'a str {
         idx += 1;
     }
 
-    &item[..=idx]
+    &item[..idx]
 }
 
 fn remove_single_tokens<'a>(item: &'a str) -> &'a str {
