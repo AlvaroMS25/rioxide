@@ -1,6 +1,6 @@
 use std::{borrow::Cow, str::Chars};
 use lazy_static::lazy_static;
-use crate::macros::*;
+use crate::{lexer::Token, macros::*};
 
 use pcre2::bytes::Regex;
 

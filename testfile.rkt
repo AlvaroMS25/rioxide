@@ -1,1 +1,1 @@
-(define juan juans)
+(define juan '(32 32 a))

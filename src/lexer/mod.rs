@@ -4,9 +4,9 @@ mod token;
 
 use std::{iter::{Enumerate, Map}, path::Iter, str::{Chars, Lines}};
 
-use token::Token;
+pub use {token::Token, error::LexerError};
 
-use self::{cursor::Cursor, error::LexerError};
+use cursor::Cursor;
 
 #[derive(Debug)]
 pub struct LocatedToken<'a> {
@@ -16,6 +16,17 @@ pub struct LocatedToken<'a> {
 
 pub struct Lexer<'a> {
     cursor: Cursor<'a>
+}
+
+fn remove_last_token<'a>(item: &'a str) -> &'a str {
+    println!("Trying to remove last token: '{}'", &item[item.len()-1 ..]);
+    if let Some(t) = Token::try_single(&item[item.len()-1 ..]) {
+        let removed = &item[0.. item.len() - t.token_len()];
+        println!("Removed last token, final: '{}'", removed);
+        removed
+    } else {
+        item
+    }
 }
 
 impl<'a> Lexer<'a> {
@@ -60,7 +71,7 @@ impl<'a> Lexer<'a> {
                     return Ok(single);
                 }
 
-                Ok(Token::multiple(buf))
+                Ok(Token::multiple(remove_last_token(buf)))
             })?);
         }
 
