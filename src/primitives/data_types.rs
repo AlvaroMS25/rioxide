@@ -110,9 +110,10 @@ impl<'a> DataType<'a> {
     }
 
     fn parse_literal_number(repr: Repr, item: &'a str) -> LiteralNumber<'a> {
+        let num = Self::take_numbers(&item[2..]);
         LiteralNumber {
             repr,
-            inner: Cow::Borrowed(item)
+            inner: Cow::Borrowed(&item[0.. num.len() + 2])
         }
     }
 
