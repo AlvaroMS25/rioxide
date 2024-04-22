@@ -1,12 +1,12 @@
 use super::{token::Token, LocatedToken};
 
-pub struct Cursor<'a> {
+pub struct LexerCursor<'a> {
     buf: &'a str,
     line: usize,
     buf_position: usize
 }
 
-impl<'a> Cursor<'a> {
+impl<'a> LexerCursor<'a> {
     pub fn new(buf: &'a str) -> Self {
         Self {
             buf,
