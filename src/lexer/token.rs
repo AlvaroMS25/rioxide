@@ -18,7 +18,7 @@ pub enum Token<'a> {
     /// Primitive data type
     Primitive(DataType<'a>),
     /// Function usage
-    Function(&'a str),
+    Ident(&'a str),
     /// if
     If,
     /// cond
@@ -50,7 +50,7 @@ impl<'a> Token<'a> {
         match self {
             OpenParen | CloseParen | OpenBracket | CloseBracket | OpenBraces | CloseBraces
             | Whitespace => 1,
-            Function(f) => f.len(),
+            Ident(f) => f.len(),
             Primitive(p) => p.len(),
             If => 2,
             Cond | Else => 4,
@@ -108,6 +108,6 @@ impl<'a> Token<'a> {
 
     pub fn parse_function(item: &'a str) -> Token<'a> {
         let space = item.find(" ").unwrap_or(item.len());
-        Token::Function(&item[0..space])
+        Token::Ident(&item[0..space])
     }
 }

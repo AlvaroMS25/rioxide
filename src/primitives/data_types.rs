@@ -51,6 +51,7 @@ pub enum Repr {
 #[derive(Debug)]
 pub struct LiteralNumber<'a> {
     inner: Cow<'a, str>,
+    #[allow(unused)]
     repr: Repr
 } 
 
