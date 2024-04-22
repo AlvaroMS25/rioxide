@@ -1,1 +1,1 @@
-(define juan '#b010101)
+(define juan '(1 2 3 4 (3 a)))

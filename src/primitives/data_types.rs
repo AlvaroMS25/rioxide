@@ -115,7 +115,6 @@ impl<'a> DataType<'a> {
     }
 
     fn parse_number(item: &'a str) -> Option<DataType<'a>> {
-        println!("parse number {item}");
         c!(item, "/", || Self::parse_rational(item));
         c!(item, "i", || Self::parse_complex(item));
         c!(item, "e", || Some(DataType::Double(item.parse::<f64>().ok()?)));

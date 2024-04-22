@@ -18,23 +18,19 @@ pub struct Lexer<'a> {
     cursor: Cursor<'a>
 }
 
-fn remove_last_token<'a>(item: &'a str) -> &'a str {
-    let mut last_idx = item.len() - 1;
-    while let Some(token) = Token::try_single(&item[last_idx.. last_idx + 1]) {
-        last_idx -= token.token_len();
-        println!("Last idx is now {} | Parsed: {:?}", last_idx, token);
+fn remove_last_tokens<'a>(item: &'a str) -> &'a str {
+    println!("Item in: {}", item);
+    if item.len() <= 1 {
+        return item;
     }
 
-    &item[..last_idx]
+    let mut finish_at = item.len() - 1;
 
-    /*println!("Trying to remove last token: '{}'", &item[item.len()-1 ..]);
-    if let Some(t) = Token::try_single(&item[item.len()-1 ..]) {
-        let removed = &item[0.. item.len() - t.token_len()];
-        println!("Removed last token, final: '{}'", removed);
-        removed
-    } else {
-        item
-    }*/
+    while finish_at > 0 && Token::try_single(&item[finish_at..finish_at+1]).is_some() {
+        finish_at -= 1;
+    }
+
+    &item[..=finish_at]
 }
 
 impl<'a> Lexer<'a> {
@@ -79,61 +75,11 @@ impl<'a> Lexer<'a> {
                     return Ok(single);
                 }
 
-                Ok(Token::multiple(remove_last_token(buf)))
+                Ok(Token::multiple(remove_last_tokens(buf)))
             })?);
         }
 
         Ok(out)
-    }
-
-    fn parse_line(line_idx: u32, line: &'a str) -> Vec<LocatedToken<'a>> {
-        println!("LINE: {line}");
-        let mut curr_index = 0;
-
-        let mut out = Vec::new();
-        
-        if line.is_empty() {
-            return out;
-        }
-
-        while curr_index < line.len() {
-            println!("Current idx: {curr_index}");
-            let mut current_chunk = &line[curr_index..curr_index+1];
-            println!("Sliced, chunk: {:?}", current_chunk);
-
-            if let Some(token) = Token::try_single(current_chunk) {
-                out.push(LocatedToken {
-                    line: line_idx,
-                    token
-                });
-
-                curr_index += 1;
-                continue;
-            }
-
-            if (&line[curr_index..]).starts_with("\"") {
-                
-            }
-
-            println!("Not single");
-
-            if let Some(space_idx) = (&line[curr_index..]).find(" ") {
-                current_chunk = &line[curr_index..=space_idx];
-                curr_index = space_idx + 1;
-            } else {
-                current_chunk = &line[curr_index..];
-                curr_index += 1;
-            }
-
-            out.push(LocatedToken {
-                line: line_idx,
-                token: Token::multiple(current_chunk)
-            });
-
-            println!("Pushed: {:?}", out.last().unwrap());
-        }
-
-        out
     }
 
     pub fn parse(self) -> Result<Vec<LocatedToken<'a>>, LexerError> {
