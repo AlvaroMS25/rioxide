@@ -21,26 +21,6 @@ pub enum Token<'a> {
     Primitive(DataType<'a>),
     /// Function usage
     Ident(&'a str),
-    /// if
-    If,
-    /// cond
-    Cond,
-    /// else
-    Else,
-    /// let
-    Let,
-    /// let*
-    LetAsterisk,
-    /// for
-    For,
-    /// for*
-    ForAsterisk,
-    /// begin
-    Begin,
-    /// when
-    When,
-    /// unless
-    Unless,
     /// Whitespace
     Whitespace
 }
@@ -54,13 +34,6 @@ impl<'a> Token<'a> {
             | Whitespace => 1,
             Ident(f) => f.len(),
             Primitive(p) => p.len(),
-            If => 2,
-            Cond | Else => 4,
-            Let | For => 3,
-            LetAsterisk | ForAsterisk => 4,
-            Begin => 5,
-            When => 4,
-            Unless => 6,
         }
     }
 
@@ -89,19 +62,6 @@ impl<'a> Token<'a> {
     }
 
     pub fn multiple(item: &'a str) -> Token<'a> {
-        swm!(item, match {
-            "if " => {Token::If},
-            "cond " => {Token::Cond},
-            "else " => {Token::Else},
-            "let " => {Token::Let},
-            "let* " => {Token::LetAsterisk},
-            "for " => {Token::For},
-            "for* " => {Token::ForAsterisk},
-            "begin " => {Token::Begin},
-            "when " => {Token::When},
-            "unless " => {Token::Unless},
-        });
-        
         if let Some(data) = DataType::parse(item) {
             Token::Primitive(data)
         } else {
