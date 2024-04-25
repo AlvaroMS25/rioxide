@@ -35,11 +35,11 @@ fn remove_last_tokens<'a>(item: &'a str) -> &'a str {
 fn remove_incoming_tokens<'a>(item: &'a str) -> &'a str {
     let mut idx = 0;
 
-    while idx < item.len() && Token::try_single(&item[idx..idx+1]).is_none() {
+    while idx < item.len() && Token::try_single(&item[idx..idx+1]).is_some() {
         idx += 1;
     }
 
-    &item[..idx]
+    &item[idx..]
 }
 
 fn remove_single_tokens<'a>(item: &'a str) -> &'a str {
@@ -57,7 +57,7 @@ impl<'a> Lexer<'a> {
         let mut out = Vec::new();
 
         while self.cursor.remaining().len() > 0 {
-            out.push(self.cursor.parse_with::<_, LexerError, _>(|buf| {
+            out.push(self.cursor.parse_with::<_, _>(|buf| {
                 if buf.is_empty() {
                     return Err(LexerError::Eof);
                 }

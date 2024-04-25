@@ -22,7 +22,9 @@ pub enum Token<'a> {
     /// Function usage
     Ident(&'a str),
     /// Whitespace
-    Whitespace
+    Whitespace,
+    /// ; are comments in racket
+    Comment
 }
 
 impl<'a> Token<'a> {
@@ -31,20 +33,10 @@ impl<'a> Token<'a> {
         
         match self {
             OpenParen | CloseParen | OpenBracket | CloseBracket | OpenBraces | CloseBraces | SingleQuote
-            | Whitespace => 1,
+            | Whitespace | Comment => 1,
             Ident(f) => f.len(),
             Primitive(p) => p.len(),
         }
-    }
-
-    pub fn needs_space(&self) -> bool {
-        use Token::*;
-
-        !matches!(
-            self, 
-            OpenParen | CloseParen | OpenBracket | CloseBracket | OpenBraces | CloseBraces
-            | Whitespace
-        )
     }
 
     pub fn try_single(item: &'a str) -> Option<Token<'a>> {
@@ -57,6 +49,7 @@ impl<'a> Token<'a> {
             "}" => Token::CloseBraces,
             "'" => Token::SingleQuote,
             " " => Token::Whitespace,
+            ";" => Token::Comment,
             _ => return None
         })
     }

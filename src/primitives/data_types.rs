@@ -91,16 +91,23 @@ impl<'a> DataType<'a> {
     }
 
     fn parse_str(item: &'a str) -> Option<Cow<'a, str>> {
+        let mut characters = item.char_indices();
         let mut until = 0;
 
-        while until < item.len() {
-            let curr = &item[until..=until + 1];
-            if curr != "\\" {
+        while let Some((idx, next_char)) = characters.next() {
+            if next_char == '\\' {
+                characters.next().unwrap(); // skip the escaped character
+                continue;
+            }
 
+            until = idx;
+
+            if next_char == '"' && idx > 0 {
+                break;
             }
         }
 
-        None
+        Some(Cow::Borrowed(&item[..=until]))
     }
 
     fn parse_prefixed(item: &'a str) -> Option<DataType<'a>> {

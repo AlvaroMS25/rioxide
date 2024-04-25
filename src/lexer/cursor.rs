@@ -70,7 +70,7 @@ impl<'a> LexerCursor<'a> {
         self.ignore_newline()
     }
 
-    pub fn parse_with<F, R, E>(&mut self, fun: F) -> Result<LocatedToken<'a>, E>
+    pub fn parse_with<F, E>(&mut self, fun: F) -> Result<LocatedToken<'a>, E>
     where
         F: FnOnce(&'a str) -> Result<Token<'a>, E>,
     {
