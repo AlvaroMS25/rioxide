@@ -91,12 +91,16 @@ impl<'a> DataType<'a> {
     }
 
     fn parse_str(item: &'a str) -> Option<Cow<'a, str>> {
-        let quotes = item.chars().filter(|c| *c == '"').count();
-        if quotes < 2 {
-            return None;
+        let mut until = 0;
+
+        while until < item.len() {
+            let curr = &item[until..=until + 1];
+            if curr != "\\" {
+
+            }
         }
 
-        todo!()
+        None
     }
 
     fn parse_prefixed(item: &'a str) -> Option<DataType<'a>> {
