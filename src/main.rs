@@ -1,5 +1,6 @@
 use std::{error::Error, iter::Enumerate, str::Chars};
 
+use ast::Ast;
 use primitives::DataType;
 
 use crate::lexer::Lexer;
@@ -27,7 +28,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    println!("{:#?}", tokens);
+    let ast = Ast::try_from(tokens
+        .into_iter()
+        .map(|t| t.token)
+        .collect::<Vec<_>>()
+    ).unwrap();
+
+    println!("{ast:#?}");
     
     handle.shutdown();
 

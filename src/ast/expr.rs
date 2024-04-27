@@ -1,41 +1,74 @@
-/*// (procedure a b..)
-pub struct CallExpr<'a> {
-    proc: &'a str,
-    
-}
+use std::{collections::{BTreeMap, LinkedList}, marker::PhantomData};
 
-pub enum ExprOperator<'a> {
-    Expr(Box<Expr<'a>>),
-    Primitive()
-}*/
+use crate::{lexer::Token, primitives::DataType};
 
-use std::collections::BTreeMap;
-
-use crate::lexer::Token;
-
+/// Defines what an expression can be
+#[derive(Debug)]
 pub enum Expr<'a> {
-    Token(Token<'a>),
-    Tree(Tree<'a>),
+    /// Parenthesized expression like (+ 2 3), this is a tree with root + and leaves 2 3
+    Parenthesized(Tree<'a>),
+    /// Any primitive
+    Primitive(DataType<'a>),
+    /// Raw identifier like "+" or a defined variable, basically anything not being a primitive
+    /// and not being quoted
+    Ident(&'a str),
+    /// Quoted items
+    RawQuoted(Box<Expr<'a>>),
 }
 
-pub struct Ast<'a> {
-    trees: Box<[Tree<'a>]>,
+impl<'a> Expr<'a> {
+    pub fn is_parenthesized(&self) -> bool {
+        matches!(self, Self::Parenthesized(_))
+    }
+
+    pub fn is_primitive(&self) -> bool {
+        matches!(self, Self::Primitive(_))
+    }
+
+    pub fn is_ident(&self) -> bool {
+        matches!(self, Self::Ident(_))
+    }
+
+    pub fn is_quoted(&self) -> bool {
+        matches!(self, Self::RawQuoted(_))
+    }
+
+    pub fn parenthesized_mut(&mut self) -> Option<&mut Tree<'a>> {
+        if let Self::Parenthesized(t) = self {
+            Some(t)
+        } else {
+            None
+        }
+    }
 }
 
+#[derive(Debug)]
 pub struct Tree<'a> {
-    tree: BTreeMap<usize, Expr<'a>>
+    node: Option<Box<Expr<'a>>>,
+    children: LinkedList<Expr<'a>>,
 }
 
 impl<'a> Tree<'a> {
     pub fn new() -> Self {
         Self {
-            tree: BTreeMap::new(),
+            node: None,
+            children: Default::default()
         }
     }
 
-    pub fn push(&mut self, node: Expr<'a>) {
-        let new_index = self.tree.last_entry().map(|e| (*e.key()) + 1).unwrap_or(0);
+    pub fn push_auto(&mut self, item: Expr<'a>) {
+        if self.node.is_none() {
+            self.set_node(item)
+        } else {
+            self.push(item)
+        }
+    }
 
-        self.tree.insert(new_index, node);
+    pub fn set_node(&mut self, item: Expr<'a>) {
+        self.node = Some(Box::new(item));
+    }
+
+    pub fn push(&mut self, item: Expr<'a>) {
+        self.children.push_back(item)
     }
 }

@@ -36,10 +36,33 @@ macro_rules! swm {
     };
 }
 
+macro_rules! enum_from_str {
+    ($v: vis enum $name:ident {
+        $($(#[$inner_meta:meta])* $variant:ident = $value:literal),* $(,)?
+    }) => {
+        $v enum $name {
+            $(
+                $(#[$inner_meta])*
+                $variant,
+            )*
+        }
+
+        impl $name {
+            $v fn from_str(item: &str) -> Option<Self> {
+                Some(match item {
+                    $($value => Self::$variant,)*
+                    _ => return None,
+                })
+            }
+        }
+    };
+}
+
 pub(crate) use mfn;
 pub(crate) use swm;
 pub(crate) use sw;
 pub(crate) use c;
+pub(crate) use enum_from_str;
 
 fn testa() -> i32 {
     let itm = "Hello world";

@@ -10,8 +10,8 @@ use cursor::LexerCursor;
 
 #[derive(Debug)]
 pub struct LocatedToken<'a> {
-    line: u32,
-    token: Token<'a>
+    pub line: u32,
+    pub token: Token<'a>
 }
 
 pub struct Lexer<'a> {
@@ -73,8 +73,7 @@ impl<'a> Lexer<'a> {
         Ok(out)
     }
 
-    pub fn parse(self) -> Result<Box<[LocatedToken<'a>]>, LexerError> {
+    pub fn parse(self) -> Result<Vec<LocatedToken<'a>>, LexerError> {
         self.parse_all()
-            .map(|res| res.into_boxed_slice())
     }
 }

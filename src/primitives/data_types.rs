@@ -69,7 +69,7 @@ impl<'a> DataType<'a> {
                 + if c.imaginary > 0 { 1 } else { 0 }, // +1 if the imaginary part is positive, because len_num does not detect it
             Floating(f) => {
                 let l = len_num(*f);
-                println!("floating with value: {f}, len: {l}");
+                //println!("floating with value: {f}, len: {l}");
                 l
             },
             Double(d) => len_num(*d),
