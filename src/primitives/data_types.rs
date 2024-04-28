@@ -8,46 +8,47 @@ lazy_static! {
     static ref COMPLEX_REGEX: Regex = Regex::new(r"[+-]?(((\d+\.\d*|\d*\.\d+|\d+)[+-])?((\d+\.\d*|\d*\.\d+|\d+)i|i(\d+\.\d*|\d*\.\d+|\d+)|i)|(\d+\.\d*|\d*\.\d+|\d+)?e\^(\([+-]?|[+-]?\()((\d+\.\d*|\d*\.\d+|\d+)i|i(\d+\.\d*|\d*\.\d+|\d+)|i)\))").unwrap();
 }
 
-
-
-#[derive(Debug)]
-pub enum DataType<'a> {
-    String(Cow<'a, str>),
-    Character(Cow<'a, str>),
-    Regex(Regex),
-    Integer(i32),
-    Rational(Rational),
-    Complex(Complex),
-    Floating(f32),
-    Double(f64),
-    Hex(LiteralNumber<'a>),
-    Octal(LiteralNumber<'a>),
-    Binary(LiteralNumber<'a>),
-    Bytes(Cow<'a, [u8]>),
-    Boolean(bool),
+get_enum! {
+    #[derive(Debug, Clone)]
+    pub enum DataType<'a> {
+        String(Cow<'a, str>),
+        Character(Cow<'a, str>),
+        #[allow(unused)]
+        Regex(Regex), // not parsed right now
+        Integer(i32),
+        Rational(Rational),
+        Complex(Complex),
+        Floating(f32),
+        Double(f64),
+        Hex(LiteralNumber<'a>),
+        Octal(LiteralNumber<'a>),
+        Binary(LiteralNumber<'a>),
+        Bytes(Cow<'a, [u8]>),
+        Boolean(bool),
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Rational {
     left: i32,
     right: i32
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Complex {
     includes_prefix: bool,
     real: i32,
     imaginary: i32
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Repr {
     Hex,
     Octal,
     Binary
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LiteralNumber<'a> {
     inner: Cow<'a, str>,
     #[allow(unused)]

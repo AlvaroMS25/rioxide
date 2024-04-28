@@ -4,7 +4,7 @@ use crate::lexer::Token;
 
 use self::expr::{Expr, Tree};
 
-mod expr;
+pub mod expr;
 
 #[derive(Debug, Error)]
 pub enum AstError {

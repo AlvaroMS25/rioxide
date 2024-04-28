@@ -6,7 +6,9 @@ use primitives::DataType;
 use crate::lexer::Lexer;
 
 mod ast;
+mod interpreter;
 mod lexer;
+mod native;
 mod parser;
 mod primitives;
 mod cli;

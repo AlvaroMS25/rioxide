@@ -21,6 +21,8 @@ pub enum Token<'a> {
     Primitive(DataType<'a>),
     /// Function usage
     Ident(&'a str),
+    /// .
+    Dot,
     /// Whitespace
     Whitespace,
     /// ; are comments in racket
@@ -33,7 +35,7 @@ impl<'a> Token<'a> {
         
         match self {
             OpenParen | CloseParen | OpenBracket | CloseBracket | OpenBraces | CloseBraces | SingleQuote
-            | Whitespace | Comment => 1,
+            | Dot | Whitespace | Comment => 1,
             Ident(f) => f.len(),
             Primitive(p) => p.len(),
         }
@@ -48,6 +50,7 @@ impl<'a> Token<'a> {
             "{" => Token::OpenBraces,
             "}" => Token::CloseBraces,
             "'" => Token::SingleQuote,
+            "." => Token::Dot,
             " " => Token::Whitespace,
             ";" => Token::Comment,
             _ => return None
