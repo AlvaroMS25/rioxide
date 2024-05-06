@@ -12,8 +12,8 @@ pub struct List<'a>(pub LinkedList<Any<'a>>);
 
 #[derive(Clone, Debug)]
 pub struct Function<'a> {
-    body: Expr<'a>,
-    arity: Option<u8>
+    pub body: Expr<'a>,
+    pub arity: Option<u8>
 }
 
 #[derive(Clone, Debug)]
@@ -37,7 +37,7 @@ get_enum! {
 }
 
 impl<'a> Function<'a> {
-    pub fn call(&self, cx: Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+    pub fn call(&self, cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
         if let Some(arity) = self.arity {
             if args.len() != arity as _ {
                 return Err(InterpreterError::DeclaredFnError(DeclaredFunctionError::ArityMismatch {

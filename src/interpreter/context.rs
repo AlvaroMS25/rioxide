@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 use crate::{ast::expr::{Expr, Tree}, native::NativeStorage};
 use crate::interpreter::error::InterpreterError;
 use crate::interpreter::Interpreter;
+use crate::native::error::DeclaredFunctionError;
 use crate::primitives::any::Any;
 
 use super::vars::VarsStorage;
@@ -42,6 +43,17 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         let vars = self.interpreter.vars();
         let fun = vars.get(fun).unwrap().get_composed().unwrap().get_function().unwrap();
 
+        if let Some(arity) = fun.arity {
+            if args.len() != arity as _ {
+                return Err(InterpreterError::DeclaredFnError(DeclaredFunctionError::ArityMismatch {
+                    got: args.len() as _,
+                    expected: arity
+                }))
+            }
+        }
+
+
+
         todo!()
     }
 
@@ -56,7 +68,7 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
             .collect::<Result<Vec<_>, InterpreterError>>()?;
 
         if self.interpreter.is_native(fun) {
-            Ok(self.interpreter.storage.get(fun).unwrap().call(&mut self.level_down(), children.as_slice())?)
+            Ok(self.interpreter.storage.get(fun).unwrap().call(&mut self, children.as_slice())?)
         } else if self.interpreter.is_declared_function(fun) {
             Ok(self.call_declared(fun, children.as_slice())?)
         } else {
