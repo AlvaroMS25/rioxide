@@ -44,8 +44,16 @@ macro_rules! hashmap {
             hm.insert(stringify!($k), $v);
         )*
 
-        hm
+        unsafe { std::mem::transmute::<HashMap<_,_>, HashMap<&'static str, _>>(hm) }
     }};
+}
+
+macro_rules! map_native_hashmap {
+    ($($k: ident => $v: expr),*) => {
+        crate::macros::hashmap! {
+            $($k => crate::native::function::NativeFunction::new($v)),*
+        }
+    };
 }
 
 macro_rules! enum_from_str {
@@ -133,6 +141,7 @@ macro_rules! get_enum {
     };
 }
 
+use std::collections::HashMap;
 pub(crate) use mfn;
 pub(crate) use swm;
 pub(crate) use sw;
@@ -140,6 +149,7 @@ pub(crate) use c;
 pub(crate) use enum_from_str;
 pub(crate) use get_enum;
 pub(crate) use hashmap;
+pub(crate) use map_native_hashmap;
 
 fn testa() -> i32 {
     let itm = "Hello world";

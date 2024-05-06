@@ -1,29 +1,33 @@
 mod comparison;
-mod error;
+pub mod error;
 mod compose;
+mod common;
+pub mod function;
 
 use error::NativeFnError;
 
 use std::collections::HashMap;
 
 use crate::{ast::expr::{Expr, Tree}, interpreter::{context::Context, Interpreter}};
-use crate::interpreter::any::Any;
-use crate::macros::hashmap;
+use crate::primitives::any::Any;
+use crate::macros::map_native_hashmap;
+use crate::native::function::NativeFunction;
 
-/// Functions that get executed natively by the interpreter. Functions will receive the whole call
-/// tree, where the node is the called function, and the children are its arguments
-pub type NativeFn<'a> = fn(&Context<'a>, &Any<'a>) -> Result<Any<'a>, NativeFnError>;
-
-pub struct NativeStorage<'a> {
-    table: HashMap<&'static str, NativeFn<'a>>
+pub struct NativeStorage {
+    table: HashMap<&'static str, NativeFunction>
 }
 
-impl<'a> NativeStorage<'a> {
+impl NativeStorage {
     pub fn new() -> Self {
         Self {
-            table: hashmap! {
-                cons => compose::cons
+            table: map_native_hashmap! {
+                cons => compose::cons,
+                define => common::define
             }
         }
+    }
+
+    pub fn get(&self, item: &str) -> Option<&NativeFunction> {
+        self.table.get(item)
     }
 }

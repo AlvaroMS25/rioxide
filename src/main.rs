@@ -9,7 +9,6 @@ mod ast;
 mod interpreter;
 mod lexer;
 mod native;
-mod parser;
 mod primitives;
 mod cli;
 mod macros;

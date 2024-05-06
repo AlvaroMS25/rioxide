@@ -1,7 +1,10 @@
 use std::{collections::{BTreeMap, LinkedList}, marker::PhantomData};
 
 use crate::{lexer::Token, primitives::DataType};
+use crate::interpreter::context::Context;
+use crate::interpreter::error::InterpreterError;
 use crate::macros::get_enum;
+use crate::primitives::any::Any;
 
 get_enum! {
     /// Defines what an expression can be
@@ -16,6 +19,12 @@ get_enum! {
         Ident(&'a str),
         /// Quoted items
         RawQuoted(Box<Expr<'a>>),
+    }
+}
+
+impl<'a> Expr<'a> {
+    pub fn eval(&self, cx: &Context<'_, 'a>) -> Result<Any<'a>, InterpreterError> {
+        todo!()
     }
 }
 
