@@ -3,11 +3,12 @@ use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::Arc;
 use crate::ast::expr::Expr;
+use crate::display::InterpreterDisplay;
 use crate::macros::get_enum;
 use crate::primitives::composed::Composed;
 use crate::primitives::DataType;
 
-pub trait AnyDebug: std::any::Any + Debug {}
+pub trait AnyDebug: std::any::Any + Debug + InterpreterDisplay {}
 
 get_enum! {
     #[derive(Clone, Debug)]

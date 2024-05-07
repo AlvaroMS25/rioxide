@@ -18,10 +18,16 @@ pub enum AstError {
 
 #[derive(Debug)]
 pub struct Ast<'a> {
-    inner: Box<[Expr<'a>]>,
+    pub inner: Box<[Expr<'a>]>,
 }
 
 impl<'a> Ast<'a> {
+    pub fn empty() -> Self {
+        Self {
+            inner: Box::from([])
+        }
+    }
+
     fn parse_quoted<I: Iterator<Item = Token<'a>>>(iter: &mut I) -> Result<Expr<'a>, AstError> {
         let next = iter.next().ok_or(AstError::MissingToken)?;
 

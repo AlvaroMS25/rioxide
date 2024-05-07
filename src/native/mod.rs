@@ -22,7 +22,8 @@ impl NativeStorage {
         Self {
             table: map_native_hashmap! {
                 cons => compose::cons,
-                define => common::define
+                define => common::define,
+                list => compose::list
             }
         }
     }

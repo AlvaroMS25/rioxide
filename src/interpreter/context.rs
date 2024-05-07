@@ -44,6 +44,11 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         }
     }
 
+    pub fn get_var(&self, var: &str) -> Option<&Any<'inner>> {
+        self.local_variables.get(var)
+            .or_else(|| self.interpreter.vars().get(var))
+    }
+
     pub fn level_down(&self) -> Self {
         Self {
             interpreter: self.interpreter,
@@ -52,8 +57,18 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         }
     }
 
+    pub fn eval_any(&mut self, item: &Any<'inner>) -> Result<Any<'inner>, InterpreterError> {
+        match item {
+            Any::Expression(expr) => self.eval(expr),
+            other => Ok(other.clone())
+        }
+    }
+
     pub fn eval(&mut self, expr: &Expr<'inner>) -> Result<Any<'inner>, InterpreterError> {
-        todo!()
+        match expr {
+            Expr::Parenthesized(tree) => self.eval_tree(tree),
+            other => Ok(Any::from(other))
+        }
     }
 
     pub fn call_declared(

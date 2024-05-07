@@ -1,9 +1,12 @@
 use std::collections::{HashMap, LinkedList};
+use std::fmt::{self, Write};
 use clap::arg;
 use crate::ast::expr::Expr;
+use crate::display::InterpreterDisplay;
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
 use crate::interpreter::vars::VarsStorage;
+use crate::interpreter::Interpreter;
 use crate::macros::get_enum;
 use crate::native::error::DeclaredFunctionError;
 use crate::primitives::any::Any;
@@ -70,5 +73,15 @@ impl<'a> FunctionBody<'a> {
         vars: HashMap<&'a str, Option<&'a Any<'a>>>
     ) -> Result<Any<'a>, InterpreterError> {
         todo!()
+    }
+}
+
+impl InterpreterDisplay for Composed<'_> {
+    fn fmt(&self, f: &mut dyn Write, interpreter: &Interpreter<'_>) -> fmt::Result {
+        match self {
+            Self::List(l) => l.fmt(f, interpreter),
+            Self::Pair(p) => p.fmt(f, interpreter),
+            _ => Ok(())
+        }
     }
 }

@@ -30,15 +30,15 @@ get_enum! {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Rational {
-    left: i32,
-    right: i32
+    pub left: i32,
+    pub right: i32
 }
 
 #[derive(Debug, Copy, Clone)]
 pub struct Complex {
-    includes_prefix: bool,
-    real: i32,
-    imaginary: i32
+    pub includes_prefix: bool,
+    pub real: i32,
+    pub imaginary: i32
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -50,9 +50,9 @@ pub enum Repr {
 
 #[derive(Debug, Clone)]
 pub struct LiteralNumber<'a> {
-    inner: Cow<'a, str>,
+    pub inner: Cow<'a, str>,
     #[allow(unused)]
-    repr: Repr
+    pub repr: Repr
 } 
 
 impl<'a> DataType<'a> {

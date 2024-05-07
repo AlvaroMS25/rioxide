@@ -2,6 +2,8 @@ pub mod context;
 pub mod vars;
 pub mod error;
 
+use crate::display::InterpreterDisplay;
+
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use crate::ast::Ast;
 use crate::ast::expr::{Expr, Tree};
@@ -15,7 +17,7 @@ use crate::primitives::any::Any;
 pub struct Interpreter<'a> {
     ast: Ast<'a>,
     storage: NativeStorage,
-    vars: Cell<VarsStorage<'a>>,
+    pub(super) vars: Cell<VarsStorage<'a>>,
 }
 
 impl<'a> Interpreter<'a> {
@@ -24,6 +26,14 @@ impl<'a> Interpreter<'a> {
             ast,
             storage: NativeStorage::new(),
             vars: Cell::new(VarsStorage::new())
+        }
+    }
+
+    pub fn with_vars(ast: Ast<'a>, vars: Cell<VarsStorage<'a>>) -> Self {
+        Self {
+            ast,
+            storage: NativeStorage::new(),
+            vars
         }
     }
 
@@ -53,7 +63,16 @@ impl<'a> Interpreter<'a> {
         dec.get_composed().map(|c| c.is_function()).unwrap_or(false)
     }
 
-    pub fn run(&mut self) -> Result<(), InterpreterError> {
+    pub fn run(&self) -> Result<(), InterpreterError> {
+        for expr in self.ast.inner.iter() {
+            let mut writer = String::new();
+            Context::new(&self)
+                .eval(expr)?
+                .fmt(&mut writer, self)
+                .unwrap();
+            println!("Out: {:?}", Context::new(&self).eval(expr)?);
+        }
+
         Ok(())
     }
 }
