@@ -37,16 +37,15 @@ get_enum! {
 }
 
 impl<'a> Function<'a> {
-    pub fn call(&self, cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
-        if let Some(arity) = self.arity {
-            if args.len() != arity as _ {
-                return Err(InterpreterError::DeclaredFnError(DeclaredFunctionError::ArityMismatch {
-                    got: args.len() as _,
-                    expected: arity
-                }))
-            }
+    pub fn is_anonymous(&self) -> bool {
+        if let Some(ident) = self.body.get_ident() {
+            ident == &"lambda"
+        } else {
+            false
         }
+    }        
 
+    pub fn find_replace(&self, cx: &mut Context<'_, 'a>) -> Result<Any<'a>, InterpreterError> {
         todo!()
     }
 }

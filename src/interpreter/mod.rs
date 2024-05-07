@@ -5,6 +5,7 @@ pub mod error;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use crate::ast::Ast;
 use crate::ast::expr::{Expr, Tree};
+use crate::cell::Cell;
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
 use crate::interpreter::vars::VarsStorage;
@@ -14,7 +15,7 @@ use crate::primitives::any::Any;
 pub struct Interpreter<'a> {
     ast: Ast<'a>,
     storage: NativeStorage,
-    vars: RwLock<VarsStorage<'a>>,
+    vars: Cell<VarsStorage<'a>>,
 }
 
 impl<'a> Interpreter<'a> {
@@ -22,20 +23,20 @@ impl<'a> Interpreter<'a> {
         Self {
             ast,
             storage: NativeStorage::new(),
-            vars: RwLock::new(VarsStorage::new())
+            vars: Cell::new(VarsStorage::new())
         }
     }
 
-    pub fn context(&self) -> Context<'_, 'a> {
+    pub fn context(&mut self) -> Context<'_, 'a> {
         Context::new(self)
     }
 
-    pub fn vars(&self) -> RwLockReadGuard<VarsStorage<'a>> {
-        self.vars.read()
+    pub fn vars(&self) -> &VarsStorage<'a> {
+        &self.vars
     }
 
-    pub fn vars_mut(&self) -> RwLockWriteGuard<VarsStorage<'a>> {
-        self.vars.write()
+    pub fn vars_mut(&self) -> &mut VarsStorage<'a> {
+        unsafe { self.vars.get_mut_unchecked() }
     }
 
     pub fn ast(&self) -> &Ast<'a> {
@@ -47,8 +48,12 @@ impl<'a> Interpreter<'a> {
     }
 
     pub fn is_declared_function(&self, item: &str) -> bool {
-        let v = self.vars();
-        let Some(dec) = v.get(item) else { return false; };
+        let vars = self.vars();
+        let Some(dec) = vars.get(item) else { return false; };
         dec.get_composed().map(|c| c.is_function()).unwrap_or(false)
+    }
+
+    pub fn run(&mut self) -> Result<(), InterpreterError> {
+        Ok(())
     }
 }

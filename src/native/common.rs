@@ -21,7 +21,8 @@ pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>,
         other => other.clone()
     };
 
-    cx.interpreter().vars_mut()
+    cx
+        .vars_mut()
         .insert(ident, item);
 
     Ok(Any::Void(()))

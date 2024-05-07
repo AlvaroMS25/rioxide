@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
-use crate::{ast::expr::{Expr, Tree}, native::NativeStorage};
+use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+
+use crate::{ast::expr::{Expr, Tree}, cell::Cell, native::NativeStorage};
 use crate::interpreter::error::InterpreterError;
 use crate::interpreter::Interpreter;
 use crate::native::error::DeclaredFunctionError;
@@ -9,14 +11,16 @@ use super::vars::VarsStorage;
 
 pub struct Context<'interpreter, 'inner> {
     interpreter: &'interpreter Interpreter<'inner>,
-    local_variables: VarsStorage<'inner>
+    local_variables: Cell<VarsStorage<'inner>>,
+    root: bool
 }
 
 impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
     pub fn new(interpreter: &'interpreter Interpreter<'inner>) -> Self {
         Self {
             interpreter,
-            local_variables: VarsStorage::new(),
+            local_variables: Cell::new(VarsStorage::new()),
+            root: true
         }
     }
 
@@ -24,10 +28,27 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         &self.interpreter
     }
 
+    pub fn vars_mut(&mut self) -> &mut VarsStorage<'inner> {
+        if self.root {
+            self.interpreter.vars_mut()
+        } else {
+            unsafe { self.local_variables.get_mut_unchecked() }
+        }
+    }
+
+    pub fn vars(&self) -> &VarsStorage<'inner> {
+        if self.root {
+            self.interpreter.vars()
+        } else{
+            &self.local_variables
+        }
+    }
+
     pub fn level_down(&self) -> Self {
         Self {
             interpreter: self.interpreter,
-            local_variables: self.local_variables.clone()
+            local_variables: self.local_variables.clone(),
+            root: false
         }
     }
 
@@ -52,7 +73,7 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
             }
         }
 
-
+        
 
         todo!()
     }

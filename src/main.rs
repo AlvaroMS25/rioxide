@@ -1,16 +1,18 @@
-use std::{error::Error, iter::Enumerate, str::Chars};
+use std::error::Error;
 
 use ast::Ast;
 use primitives::DataType;
 
-use crate::lexer::Lexer;
+use crate::{cli::Cli, interpreter::Interpreter, lexer::Lexer};
 
 mod ast;
 mod interpreter;
 mod lexer;
 mod native;
 mod primitives;
+mod cell;
 mod cli;
+mod display;
 mod macros;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -36,6 +38,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     ).unwrap();
 
     println!("{ast:#?}");
+
+    let _interpreter = Interpreter::new(ast);
     
     handle.shutdown();
 
