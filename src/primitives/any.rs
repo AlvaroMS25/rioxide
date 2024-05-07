@@ -1,3 +1,4 @@
+use std::f32::consts::E;
 use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::Arc;
@@ -19,12 +20,18 @@ get_enum! {
     }
 }
 
-impl<'a> Any<'a> {
+impl<'a> From<Expr<'a>> for Any<'a> {
+    fn from(value: Expr<'a>) -> Self {
+        match value {
+            Expr::Primitive(p) => Self::Primitive(p),
+            other => Self::Expression(other)
+        }       
+    }
 }
 
 impl<'a> From<&Expr<'a>> for Any<'a> {
     fn from(value: &Expr<'a>) -> Self {
-        todo!()
+        Self::from(value.clone())
     }
 }
 
