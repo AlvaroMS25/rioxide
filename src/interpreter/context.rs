@@ -68,7 +68,7 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
             .collect::<Result<Vec<_>, InterpreterError>>()?;
 
         if self.interpreter.is_native(fun) {
-            Ok(self.interpreter.storage.get(fun).unwrap().call(&mut self, children.as_slice())?)
+            Ok(self.interpreter.storage.get(fun).unwrap().call(self, children.as_slice())?)
         } else if self.interpreter.is_declared_function(fun) {
             Ok(self.call_declared(fun, children.as_slice())?)
         } else {
