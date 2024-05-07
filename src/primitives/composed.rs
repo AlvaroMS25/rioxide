@@ -1,8 +1,9 @@
-use std::collections::LinkedList;
+use std::collections::{HashMap, LinkedList};
 use clap::arg;
 use crate::ast::expr::Expr;
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
+use crate::interpreter::vars::VarsStorage;
 use crate::macros::get_enum;
 use crate::native::error::DeclaredFunctionError;
 use crate::primitives::any::Any;
@@ -11,9 +12,19 @@ use crate::primitives::any::Any;
 pub struct List<'a>(pub LinkedList<Any<'a>>);
 
 #[derive(Clone, Debug)]
+pub struct FunctionBody<'a>(pub Expr<'a>);
+
+#[derive(Clone, Debug)]
 pub struct Function<'a> {
-    pub body: Expr<'a>,
+    pub name: &'a str,
+    pub body: FunctionBody<'a>,
     pub arity: Option<u8>
+}
+
+#[derive(Clone, Debug)]
+pub struct LambdaFunction<'a> {
+    pub arity: Option<u8>,
+    pub body: FunctionBody<'a>
 }
 
 #[derive(Clone, Debug)]
@@ -31,21 +42,33 @@ get_enum! {
     pub enum Composed<'a> {
         List(List<'a>),
         Function(Function<'a>),
+        Lambda(LambdaFunction<'a>),
         Symbol(Symbol<'a>),
         Pair(Pair<'a>)
     }
 }
 
-impl<'a> Function<'a> {
-    pub fn is_anonymous(&self) -> bool {
-        if let Some(ident) = self.body.get_ident() {
-            ident == &"lambda"
-        } else {
-            false
-        }
-    }        
+impl<'a> Function<'a> {        
+    pub fn evaluate(&self, cx: &mut Context<'_, 'a>) -> Result<Any<'a>, InterpreterError> {
+        let Some(body) = self.body.0.get_parenthesized() else { return Ok(Any::from(&self.body.0)) };
 
-    pub fn find_replace(&self, cx: &mut Context<'_, 'a>) -> Result<Any<'a>, InterpreterError> {
+        if body.children.len() < 1 {
+            return Err(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression));
+        }
+
+        let mut parameters = HashMap::with_capacity(body.children.len() + (body.node.is_some() as usize));
+        let _ = &mut parameters;
+
+        self.body.evaluate(cx, parameters)
+    }
+}
+
+impl<'a> FunctionBody<'a> {
+    pub fn evaluate(
+        &self, 
+        cx: &mut Context<'_, 'a>, 
+        vars: HashMap<&'a str, Option<&'a Any<'a>>>
+    ) -> Result<Any<'a>, InterpreterError> {
         todo!()
     }
 }

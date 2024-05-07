@@ -16,6 +16,12 @@ impl<'a> VarsStorage<'a> {
         }
     }
 
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            table: HashMap::with_capacity(capacity)
+        }
+    }
+
     pub fn get(&self, key: &str) -> Option<&Any<'a>> {
         self.table.get(key).map(|c| c.deref())
     }

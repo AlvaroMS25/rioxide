@@ -31,6 +31,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
+    println!("{tokens:?}");
+
     let ast = Ast::try_from(tokens
         .into_iter()
         .map(|t| t.token)

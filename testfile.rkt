@@ -1,1 +1,2 @@
-(define juan '(1 2 3 4 (2)) 'juan)
+(define (double x) (* x x))
+(define double-lambda (lambda (x) (* x x)))

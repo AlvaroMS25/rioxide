@@ -65,8 +65,24 @@ impl<'a> Token<'a> {
         }
     }
 
+    fn find_single(item: &'a str) -> Option<usize> {
+        let mut idx = 0;
+
+        while idx < item.len() {
+            if Self::try_single(&item[idx..idx+1]).is_some() {
+                return Some(idx);
+            }
+
+            idx += 1;
+        }
+
+        None
+    }
+
     pub fn parse_function(item: &'a str) -> Token<'a> {
         let space = item.find(" ").unwrap_or(item.len());
-        Token::Ident(&item[0..space])
+        let next_single = Self::find_single(item).unwrap_or(item.len());
+
+        Token::Ident(&item[0..std::cmp::min(space, next_single)])
     }
 }
