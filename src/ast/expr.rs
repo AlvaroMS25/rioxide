@@ -23,10 +23,6 @@ get_enum! {
 }
 
 impl<'a> Expr<'a> {
-    pub fn eval(&self, cx: &Context<'_, 'a>) -> Result<Any<'a>, InterpreterError> {
-        todo!()
-    }
-
     pub fn make_static(self) -> Expr<'static> {
         let this = match self {
             Self::Parenthesized(p) => Self::Parenthesized(p.make_static()),
