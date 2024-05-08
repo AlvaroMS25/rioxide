@@ -215,6 +215,34 @@ impl<'a> DataType<'a> {
     fn parse_num(item: &'a str) -> Option<i64> {
         item.parse().ok()
     }
+
+    pub fn make_static(self) -> DataType<'static> {
+        use DataType::*;
+        let this = match self {
+            String(d) => String(Cow::Owned(d.into_owned())),
+            Character(c) => Character(Cow::Owned(c.into_owned())),
+            Hex(h) => Hex(LiteralNumber {
+                repr: Repr::Hex, 
+                inner: Cow::Owned(h.inner.into_owned())
+            }),
+            Octal(o) => Octal(LiteralNumber {
+                repr: Repr::Octal,
+                inner: Cow::Owned(o.inner.into_owned())
+            }),
+            Binary(b) => Binary(LiteralNumber {
+                repr: Repr::Binary,
+                inner: Cow::Owned(b.inner.into_owned())
+            }),
+            Bytes(b) => Bytes(Cow::Owned(b.into_owned())),
+            other => other,
+        };
+
+        // SAFETY: All variants depending on 'a have been made owned,
+        // so this is safe.
+        unsafe {
+            std::mem::transmute::<_, DataType<'static>>(this)
+        }
+    }
 }
 
 fn len_u8buf<B: AsRef<[u8]>>(item: &B) -> usize {

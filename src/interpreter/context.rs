@@ -1,7 +1,7 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, ops::Deref};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use crate::{ast::expr::{Expr, Tree}, cell::Cell, native::NativeStorage};
+use crate::{ast::expr::{Expr, Tree}, cell::Cell, container::VarsContainer, native::NativeStorage};
 use crate::interpreter::error::InterpreterError;
 use crate::interpreter::Interpreter;
 use crate::native::error::DeclaredFunctionError;
@@ -28,7 +28,7 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         &self.interpreter
     }
 
-    pub fn vars_mut(&mut self) -> &mut VarsStorage<'inner> {
+    pub fn vars_mut(&mut self) -> &mut dyn VarsContainer<'inner> {
         if self.root {
             self.interpreter.vars_mut()
         } else {
@@ -36,11 +36,11 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         }
     }
 
-    pub fn vars(&self) -> &VarsStorage<'inner> {
+    pub fn vars(&self) -> &dyn VarsContainer<'inner> {
         if self.root {
             self.interpreter.vars()
         } else{
-            &self.local_variables
+            self.local_variables.deref()
         }
     }
 

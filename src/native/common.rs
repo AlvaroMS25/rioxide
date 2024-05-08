@@ -23,7 +23,22 @@ pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>,
 
     cx
         .vars_mut()
-        .insert(ident, item);
+        .insert(&ident, item);
 
     Ok(Any::Void(()))
+}
+
+pub fn ast<'a>(cx: &mut Context<'_, 'a>, _: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+    println!("{:?}", cx.interpreter().ast());
+
+    Ok(Any::Void(()))
+}
+
+pub fn clear_terminal<'a>(cx: &mut Context, _: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+    print!("\x1B[2J\x1B[1;1H");
+    Ok(Any::Void(()))
+}
+
+pub fn exit<'a>(_: &mut Context, _: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+    std::process::exit(0);
 }

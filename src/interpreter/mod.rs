@@ -14,10 +14,12 @@ use crate::interpreter::vars::VarsStorage;
 use crate::native::NativeStorage;
 use crate::primitives::any::Any;
 
+use self::vars::OwnedStorage;
+
 pub struct Interpreter<'a> {
     ast: Ast<'a>,
     storage: NativeStorage,
-    pub(super) vars: Cell<VarsStorage<'a>>,
+    pub(super) vars: Cell<OwnedStorage>,
 }
 
 impl<'a> Interpreter<'a> {
@@ -25,11 +27,11 @@ impl<'a> Interpreter<'a> {
         Self {
             ast,
             storage: NativeStorage::new(),
-            vars: Cell::new(VarsStorage::new())
+            vars: Cell::new(OwnedStorage::new())
         }
     }
 
-    pub fn with_vars(ast: Ast<'a>, vars: Cell<VarsStorage<'a>>) -> Self {
+    pub fn with_vars(ast: Ast<'a>, vars: Cell<OwnedStorage>) -> Self {
         Self {
             ast,
             storage: NativeStorage::new(),
@@ -37,15 +39,15 @@ impl<'a> Interpreter<'a> {
         }
     }
 
-    pub fn context(&mut self) -> Context<'_, 'a> {
+    pub fn context(&self) -> Context<'_, 'a> {
         Context::new(self)
     }
 
-    pub fn vars(&self) -> &VarsStorage<'a> {
+    pub fn vars(&self) -> &OwnedStorage {
         &self.vars
     }
 
-    pub fn vars_mut(&self) -> &mut VarsStorage<'a> {
+    pub fn vars_mut(&self) -> &mut OwnedStorage {
         unsafe { self.vars.get_mut_unchecked() }
     }
 
@@ -66,11 +68,11 @@ impl<'a> Interpreter<'a> {
     pub fn run(&self) -> Result<(), InterpreterError> {
         for expr in self.ast.inner.iter() {
             let mut writer = String::new();
-            Context::new(&self)
+            self.context()
                 .eval(expr)?
                 .fmt(&mut writer, self)
                 .unwrap();
-            println!("Out: {:?}", Context::new(&self).eval(expr)?);
+            println!("{writer}");
         }
 
         Ok(())

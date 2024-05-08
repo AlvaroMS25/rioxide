@@ -17,7 +17,6 @@ get_enum! {
         Composed(Box<Composed<'a>>),
         Expression(Expr<'a>),
         Void(()),
-        Other(Arc<dyn AnyDebug>)
     }
 }
 
@@ -39,5 +38,17 @@ impl<'a> From<&Expr<'a>> for Any<'a> {
 impl<'a> From<&Box<Expr<'a>>> for Any<'a> {
     fn from(value: &Box<Expr<'a>>) -> Self {
         value.deref().into()
+    }
+}
+
+impl Any<'_> {
+    pub fn make_static(self) -> Any<'static> {
+        use Any::*;
+        match self {
+            Primitive(p) => Primitive(p.make_static()),
+            Composed(c) => Composed(Box::new(c.make_static())),
+            Expression(e) => Expression(e.make_static()),
+            Void(()) => Void(())
+        }
     }
 }

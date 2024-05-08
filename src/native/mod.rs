@@ -23,7 +23,10 @@ impl NativeStorage {
             table: map_native_hashmap! {
                 cons => compose::cons,
                 define => common::define,
-                list => compose::list
+                list => compose::list,
+                ast => common::ast,
+                clear => common::clear_terminal,
+                exit => common::exit
             }
         }
     }

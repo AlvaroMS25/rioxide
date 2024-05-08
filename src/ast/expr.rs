@@ -26,6 +26,21 @@ impl<'a> Expr<'a> {
     pub fn eval(&self, cx: &Context<'_, 'a>) -> Result<Any<'a>, InterpreterError> {
         todo!()
     }
+
+    pub fn make_static(self) -> Expr<'static> {
+        let this = match self {
+            Self::Parenthesized(p) => Self::Parenthesized(p.make_static()),
+            Self::Primitive(p) => Self::Primitive(p.make_static()),
+            Self::Ident(ident) => {
+                Self::Ident(Box::leak(ident.to_string().into_boxed_str()))
+            },
+            Self::RawQuoted(r) => Self::RawQuoted(Box::new(r.make_static()))
+        };
+
+        unsafe {
+            std::mem::transmute::<_, Expr<'static>>(this)
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -39,6 +54,13 @@ impl<'a> Tree<'a> {
         Self {
             node: None,
             children: Default::default()
+        }
+    }
+
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            node: None,
+            children: Vec::with_capacity(capacity)
         }
     }
 
@@ -56,5 +78,17 @@ impl<'a> Tree<'a> {
 
     pub fn push(&mut self, item: Expr<'a>) {
         self.children.push(item)
+    }
+
+    pub fn make_static(self) -> Tree<'static> {
+        let mut new_tree = Tree::new();
+
+        new_tree.node = self.node.map(|m| Box::new(m.make_static()));
+
+        for item in self.children {
+            new_tree.push(item.make_static());
+        }
+
+        new_tree
     }
 }

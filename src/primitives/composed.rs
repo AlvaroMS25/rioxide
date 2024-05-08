@@ -3,6 +3,7 @@ use std::fmt::{self, Write};
 use clap::arg;
 use crate::ast::expr::Expr;
 use crate::display::InterpreterDisplay;
+use crate::ext::StrExt;
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
 use crate::interpreter::vars::VarsStorage;
@@ -82,6 +83,71 @@ impl InterpreterDisplay for Composed<'_> {
             Self::List(l) => l.fmt(f, interpreter),
             Self::Pair(p) => p.fmt(f, interpreter),
             _ => Ok(())
+        }
+    }
+}
+
+impl Composed<'_> {
+    pub fn make_static(self) -> Composed<'static> {
+        use Composed::*;
+        match self {
+            List(l) => List(l.make_static()),
+            Function(f) => Function(f.make_static()),
+            Lambda(l) => Lambda(l.make_static()),
+            Symbol(s) => Symbol(s.make_static()),
+            Pair(p) => Pair(p.make_static()),
+        }
+    }
+}
+
+impl List<'_> {
+    pub fn make_static(self) -> List<'static> {
+        let mut new_list = LinkedList::new();
+
+        for item in self.0 {
+            new_list.push_back(item.make_static());
+        }
+
+        List(new_list)
+    }
+}
+
+impl FunctionBody<'_> {
+    pub fn make_static(self) -> FunctionBody<'static> {
+        FunctionBody(self.0.make_static())
+    }
+}
+
+impl Function<'_> {
+    pub fn make_static(self) -> Function<'static> {
+        Function {
+            name: self.name.make_static(),
+            body: self.body.make_static(),
+            arity: self.arity
+        }
+    }
+}
+
+impl LambdaFunction<'_> {
+    pub fn make_static(self) -> LambdaFunction<'static> {
+        LambdaFunction {
+            arity: self.arity,
+            body: self.body.make_static(),
+        }
+    }
+}
+
+impl Symbol<'_> {
+    pub fn make_static(self) -> Symbol<'static> {
+        Symbol(self.0.make_static())
+    }
+}
+
+impl Pair<'_> {
+    pub fn make_static(self) -> Pair<'static> {
+        Pair {
+            left: self.left.make_static(),
+            right: self.right.make_static()
         }
     }
 }

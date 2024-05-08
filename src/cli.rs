@@ -7,7 +7,7 @@ use clap::{Parser, Subcommand};
 #[command(long_about = "A simple racket interpreter made to learn to write interpreters")]
 pub struct Cli {
     #[command(subcommand)]
-    command: Option<SubCommands>
+    pub command: Option<SubCommands>
 }
 
 #[derive(Subcommand)]
