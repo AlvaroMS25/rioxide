@@ -11,6 +11,13 @@ pub enum NativeFnError {
     IdentifierExpectedIn {
         call: &'static str,
         got: String
+    },
+    #[error("Wrong argument on function {function} at position {argument_position}, got {got}, expected {expected}")]
+    UnexpectedType {
+        function: &'static str,
+        argument_position: u8,
+        got: &'static str,
+        expected: &'static str
     }
 }
 

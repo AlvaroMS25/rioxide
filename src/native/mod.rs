@@ -1,6 +1,7 @@
 mod comparison;
 pub mod error;
 mod compose;
+mod debug;
 mod common;
 pub mod function;
 
@@ -21,12 +22,13 @@ impl NativeStorage {
     pub fn new() -> Self {
         Self {
             table: map_native_hashmap! {
-                cons => compose::cons,
-                define => common::define,
-                list => compose::list,
-                ast => common::ast,
-                clear => common::clear_terminal,
-                exit => common::exit
+                "cons" => compose::cons,
+                "define" => common::define,
+                "list" => compose::list,
+                "d/ast" => debug::ast,
+                "d/clear" => debug::clear_terminal,
+                "d/exit" => debug::exit,
+                "d/ast-with" => debug::ast_with
             }
         }
     }

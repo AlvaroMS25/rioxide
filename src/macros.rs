@@ -37,11 +37,11 @@ macro_rules! swm {
 }
 
 macro_rules! hashmap {
-    ($($k: ident => $v: expr),*) => {{
+    ($($k: literal => $v: expr),*) => {{
         let mut hm = std::collections::HashMap::new();
 
         $(
-            hm.insert(stringify!($k), $v);
+            hm.insert($k, $v);
         )*
 
         unsafe { std::mem::transmute::<HashMap<_,_>, HashMap<&'static str, _>>(hm) }
@@ -49,7 +49,7 @@ macro_rules! hashmap {
 }
 
 macro_rules! map_native_hashmap {
-    ($($k: ident => $v: expr),*) => {
+    ($($k: literal => $v: expr),*) => {
         crate::macros::hashmap! {
             $($k => crate::native::function::NativeFunction::new($v)),*
         }
@@ -136,6 +136,15 @@ macro_rules! get_enum {
                         }
                     }
                 )*
+
+                #[allow(unused)]
+                $v fn variant_name(&self) -> &'static str {
+                    match self {
+                        $(
+                            Self::$variant(_) => stringify!([<$variant:lower>])
+                        ),*
+                    }
+                }
             }
         }
     };
