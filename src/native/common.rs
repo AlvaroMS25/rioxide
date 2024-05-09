@@ -17,14 +17,14 @@ pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>,
             got: format!("{:?}", args[0])
         }))?;
 
-    let item = match &args[1] {
+    /*let item = match &args[1] {
         Any::Expression(e) => cx.eval(e)?,
         other => other.clone()
-    };
+    };*/
 
     cx
         .vars_mut()
-        .insert(&ident, item);
+        .insert(&ident, args[1].clone());
 
     Ok(Any::Void(()))
 }
