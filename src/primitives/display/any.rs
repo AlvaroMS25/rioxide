@@ -7,6 +7,7 @@ impl InterpreterDisplay for Any<'_> {
         match self {
             Any::Primitive(p) => p.fmt(f, interpreter),
             Any::Composed(c) => c.fmt(f, interpreter),
+            Any::Expression(e) => e.fmt(f, interpreter),
             _ => Ok(())
         }
     }

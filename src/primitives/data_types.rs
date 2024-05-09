@@ -60,7 +60,8 @@ impl<'a> DataType<'a> {
         use DataType::*;
 
         match self {
-            String(item) | Character(item) => len_u8buf(&item.as_ref()),
+            String(item) => len_u8buf(&item.as_ref()),
+            Character(item) => len_u8buf(&item.as_ref()) + 2, // #\ count
             Regex(r) => r.as_str().len(),
             Integer(i) => len_num(*i),
             Rational(r) => len_num(r.left) + len_num(r.right) + 1, // +1 for "/" character

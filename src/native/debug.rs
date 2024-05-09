@@ -39,3 +39,28 @@ pub fn ast_with<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a
 
     cx.eval_any(&args[1])
 }
+
+pub fn show_memory<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+    if args.len() < 1 {
+        return Err(InterpreterError::NativeError(NativeFnError::ArityMismatch { expected: 1, got: args.len() as _ }));
+    }
+
+    let Some(pretty) = args[0].get_primitive().map(|v| v.get_boolean()).flatten() else {
+        return Err(InterpreterError::NativeError(NativeFnError::UnexpectedType {
+            function: "show-memory",
+            argument_position: 1,
+            got: args[0].variant_name(),
+            expected: DataType::Boolean(false).variant_name()
+        }))
+    };
+
+    if *pretty {
+        println!("Global: {:#?}", cx.global_vars());
+        println!("Local: {:#?}", cx.local_vars());
+    } else {
+        println!("Global: {:?}", cx.global_vars());
+        println!("Local: {:?}", cx.local_vars());
+    }
+
+    Ok(Any::Void(()))
+}

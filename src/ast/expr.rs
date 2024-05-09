@@ -1,6 +1,8 @@
-use std::{collections::{BTreeMap, LinkedList}, marker::PhantomData};
+use std::fmt;
 
-use crate::{lexer::Token, primitives::DataType};
+use crate::display::RawDisplay;
+use crate::interpreter::Interpreter;
+use crate::{display::InterpreterDisplay, lexer::Token, primitives::DataType};
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
 use crate::macros::get_enum;
@@ -86,5 +88,66 @@ impl<'a> Tree<'a> {
         }
 
         new_tree
+    }
+}
+
+impl InterpreterDisplay for Expr<'_> {
+    fn fmt(&self, f: &mut dyn fmt::Write, interpreter: &Interpreter<'_>) -> fmt::Result {
+        match self {
+            Self::Ident(ident) => write!(f, "{ident}"),
+            Self::Primitive(p) => p.fmt(f, interpreter),
+            Self::RawQuoted(r) => {
+                write!(f, "'")?;
+                r.raw_fmt(f, interpreter)
+            },
+            Self::Parenthesized(p) => p.fmt(f, interpreter),
+        }
+    }
+}
+
+impl InterpreterDisplay for Tree<'_> {
+    fn fmt(&self, f: &mut dyn fmt::Write, interpreter: &Interpreter<'_>) -> fmt::Result {
+        write!(f, "(")?;
+        if let Some(node) = &self.node {
+            node.fmt(f, interpreter)?;
+        }
+
+        for item in &self.children {
+            write!(f, " ")?;
+            item.fmt(f, interpreter)?;
+        }
+
+        write!(f, ")")
+    }
+}
+
+impl RawDisplay for Tree<'_> {
+    fn raw_fmt(&self, f: &mut dyn fmt::Write, interpreter: &Interpreter) -> fmt::Result {
+        write!(f, "(")?;
+
+        if let Some(node) = &self.node {
+            node.raw_fmt(f, interpreter)?;
+        }
+
+        for item in &self.children {
+            write!(f, " ")?;
+            item.raw_fmt(f, interpreter)?;
+        }
+
+        write!(f, ")")
+    }
+}
+
+impl RawDisplay for Expr<'_> {
+    fn raw_fmt(&self, f: &mut dyn fmt::Write, interpreter: &Interpreter) -> fmt::Result {
+        match self {
+            Self::Ident(i) => write!(f, "{i}"),
+            Self::Parenthesized(t) => t.raw_fmt(f, interpreter),
+            Self::RawQuoted(t) => {
+                write!(f, "'")?;
+                t.raw_fmt(f, interpreter)
+            },
+            Self::Primitive(p) => p.raw_fmt(f, interpreter),
+        }
     }
 }

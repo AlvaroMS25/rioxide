@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ops::Deref};
+use std::{collections::HashMap, fmt, ops::Deref};
 
 use parking_lot::RwLock;
 
@@ -74,5 +74,17 @@ impl<'b> VarsContainer<'b> for OwnedStorage {
 
     fn insert(&mut self, key: &str, value: Any<'b>) {
         self.insert(key, value)
+    }
+}
+
+impl fmt::Debug for VarsStorage<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        <HashMap<String, Cell<Any<'_>>> as fmt::Debug>::fmt(&self.table, f)
+    }
+}
+
+impl fmt::Debug for OwnedStorage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        <HashMap<String, Cell<Any<'static>>> as fmt::Debug>::fmt(&self.table, f)
     }
 }

@@ -7,7 +7,7 @@ use crate::interpreter::Interpreter;
 use crate::native::error::DeclaredFunctionError;
 use crate::primitives::any::Any;
 
-use super::vars::VarsStorage;
+use super::vars::{OwnedStorage, VarsStorage};
 
 pub struct Context<'interpreter, 'inner> {
     interpreter: &'interpreter Interpreter<'inner>,
@@ -44,6 +44,14 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         }
     }
 
+    pub fn local_vars(&self) -> &VarsStorage<'inner> {
+        &self.local_variables
+    }
+
+    pub fn global_vars(&self) -> &OwnedStorage {
+        self.interpreter.vars()
+    }
+
     pub fn get_var(&self, var: &str) -> Option<&Any<'inner>> {
         self.local_variables.get(var)
             .or_else(|| self.interpreter.vars().get(var))
@@ -55,6 +63,11 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
             local_variables: self.local_variables.clone(),
             root: false
         }
+    }
+
+    pub fn is_declared_function(&self, key: &str) -> bool {
+        self.local_variables.get(key).is_some()
+            || self.interpreter().vars().get(key).is_some()
     }
 
     pub fn eval_any(&mut self, item: &Any<'inner>) -> Result<Any<'inner>, InterpreterError> {
@@ -105,7 +118,7 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
 
         if self.interpreter.is_native(fun) {
             Ok(self.interpreter.storage.get(fun).unwrap().call(self, children.as_slice())?)
-        } else if self.interpreter.is_declared_function(fun) {
+        } else if self.is_declared_function(fun) {
             Ok(self.call_declared(fun, children.as_slice())?)
         } else {
             Err(InterpreterError::UndefinedFunction(fun.to_string()))

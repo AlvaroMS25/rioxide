@@ -28,7 +28,8 @@ impl NativeStorage {
                 "d/ast" => debug::ast,
                 "d/clear" => debug::clear_terminal,
                 "d/exit" => debug::exit,
-                "d/ast-with" => debug::ast_with
+                "d/ast-with" => debug::ast_with,
+                "d/show-memory" => debug::show_memory
             }
         }
     }

@@ -1,4 +1,4 @@
-use std::{cell::UnsafeCell, ops::Deref};
+use std::{cell::UnsafeCell, fmt, ops::Deref};
 
 pub struct Cell<T> {
     inner: UnsafeCell<T>
@@ -29,5 +29,11 @@ impl<T: Clone> Clone for Cell<T> {
         Self {
             inner: UnsafeCell::new(self.deref().clone())
         }
+    }
+}
+
+impl<T: fmt::Debug> fmt::Debug for Cell<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        <T as fmt::Debug>::fmt(self, f)
     }
 }

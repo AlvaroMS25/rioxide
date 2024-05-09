@@ -1,13 +1,13 @@
 use pcre2::bytes::Regex;
 
-use crate::{display::InterpreterDisplay, interpreter::Interpreter, primitives::{Complex, DataType, LiteralNumber, Rational, Repr}};
+use crate::{display::{InterpreterDisplay, RawDisplay}, interpreter::Interpreter, primitives::{Complex, DataType, LiteralNumber, Rational, Repr}};
 use std::{borrow::Cow, fmt::{self, Write}, ops::Deref};
 
 impl InterpreterDisplay for DataType<'_> {
     fn fmt(&self, f: &mut dyn Write, interpreter: &Interpreter<'_>) -> fmt::Result {
         match self {
             Self::String(s) => s.fmt(f, interpreter),
-            Self::Character(c) => c.fmt(f, interpreter),
+            Self::Character(c) => CharacterDisplay(c).fmt(f, interpreter),
             Self::Regex(r) => r.fmt(f, interpreter),
             Self::Integer(i) => i.fmt(f, interpreter),
             Self::Rational(r) => r.fmt(f, interpreter),
@@ -27,9 +27,11 @@ impl InterpreterDisplay for &str {
     }
 }
 
-impl InterpreterDisplay for char {
+pub struct CharacterDisplay<'a>(pub &'a Cow<'a, str>);
+
+impl InterpreterDisplay for CharacterDisplay<'_> {
     fn fmt(&self, f: &mut dyn Write, _: &Interpreter<'_>) -> fmt::Result {
-        write!(f, "#\\{self}")
+        write!(f, "#\\{}", self.0)
     }
 }
 
@@ -102,5 +104,11 @@ impl InterpreterDisplay for Cow<'_, str> {
 impl InterpreterDisplay for bool {
     fn fmt(&self, f: &mut dyn Write, _: &Interpreter<'_>) -> fmt::Result {
         write!(f, "#{}", if *self { 't' } else { 'f' })
+    }
+}
+
+impl RawDisplay for DataType<'_> {
+    fn raw_fmt(&self, f: &mut dyn Write, interpreter: &Interpreter<'_>) -> fmt::Result {
+        self.fmt(f, interpreter)
     }
 }

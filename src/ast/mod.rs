@@ -74,6 +74,26 @@ impl<'a> Ast<'a> {
         Err(AstError::MissingClosingDelimiter)
     }
 
+    fn parse_expr<I>(iter: &mut I) -> Result<Option<Expr<'a>>, AstError> 
+    where
+        I: Iterator<Item = Token<'a>>
+    {
+        let Some(token) = iter.next() else { return Ok(None); };
+
+        Ok(match token {
+            Token::OpenBraces | Token::OpenBracket | Token::OpenParen
+                => Some(Expr::Parenthesized(Self::parse_tree(iter)?)),
+            Token::SingleQuote => Some(Expr::RawQuoted(Box::new({
+                if let Some(e) = Self::parse_expr(iter)? {
+                    e
+                } else {
+                    return Ok(None);
+                }
+            }))),
+            other => Self::parse_token(other)
+        })
+    }
+
     fn parse<I>(mut iter: I) -> Result<Vec<Expr<'a>>, AstError>
     where
         I: ExactSizeIterator<Item = Token<'a>>
@@ -81,16 +101,8 @@ impl<'a> Ast<'a> {
         // preallocate a fourth of the size of the iterator, this is an arbitrary measure
         let mut out = Vec::with_capacity(iter.len() / 4);
 
-        while let Some(token) = iter.next() {
-            let parsed = match token {
-                Token::OpenBraces | Token::OpenBracket | Token::OpenParen
-                    => Some(Expr::Parenthesized(Self::parse_tree(&mut iter)?)),
-                other => Self::parse_token(other)
-            };
-
-            if let Some(token) = parsed {
-                out.push(token);
-            }
+        while let Some(next) = Self::parse_expr(&mut iter)? {
+            out.push(next);
         }
 
         Ok(out)
