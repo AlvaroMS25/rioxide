@@ -1,3 +1,4 @@
+pub mod eval_tree;
 pub mod context;
 pub mod vars;
 pub mod error;
@@ -69,7 +70,7 @@ impl<'a> Interpreter<'a> {
         for expr in self.ast.inner.iter() {
             let mut writer = String::new();
             self.context()
-                .eval(expr)?
+                .eval_expr(expr)?
                 .fmt(&mut writer, self)
                 .unwrap();
             println!("{writer}");

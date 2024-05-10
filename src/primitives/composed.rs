@@ -4,6 +4,7 @@ use clap::arg;
 use crate::ast::expr::Expr;
 use crate::display::InterpreterDisplay;
 use crate::ext::StrExt;
+use crate::interpreter::eval_tree::EvalTree;
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
 use crate::interpreter::vars::VarsStorage;
@@ -16,7 +17,10 @@ use crate::primitives::any::Any;
 pub struct List<'a>(pub LinkedList<Any<'a>>);
 
 #[derive(Clone, Debug)]
-pub struct FunctionBody<'a>(pub Expr<'a>);
+pub struct FunctionBody<'a> {
+    pub args: Vec<&'a str>,
+    pub body: Vec<Expr<'a>>,
+}
 
 #[derive(Clone, Debug)]
 pub struct Function<'a> {
@@ -52,28 +56,40 @@ get_enum! {
     }
 }
 
-impl<'a> Function<'a> {        
-    pub fn evaluate(&self, cx: &mut Context<'_, 'a>) -> Result<Any<'a>, InterpreterError> {
-        let Some(body) = self.body.0.get_parenthesized() else { return Ok(Any::from(&self.body.0)) };
-
-        if body.children.len() < 1 {
-            return Err(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression));
-        }
-
-        let mut parameters = HashMap::with_capacity(body.children.len() + (body.node.is_some() as usize));
-        let _ = &mut parameters;
-
-        self.body.evaluate(cx, parameters)
-    }
-}
-
 impl<'a> FunctionBody<'a> {
     pub fn evaluate(
         &self, 
         cx: &mut Context<'_, 'a>, 
-        vars: HashMap<&'a str, Option<&'a Any<'a>>>
+        vars: &HashMap<&'a str, Option<&'a Any<'a>>>
     ) -> Result<Any<'a>, InterpreterError> {
+        //let Some(paren) = self.body.get_parenthesized() else { return Ok(Any::from(&self.0)); };
+
+        let mut iter = self.body.iter().enumerate().skip(1); // first child is the argument list;
+
+        while let Some((idx, expr)) = iter.next() {
+            if idx == self.body.len() - 1 {
+                return Self::eval_expr(cx, expr, vars);
+            } else {
+                Self::eval_expr(cx, expr, vars)?;
+            }
+        }
+
         todo!()
+    }
+
+    fn eval_expr(
+        cx: &mut Context<'_, 'a>,
+        expr: &Expr<'a>,
+        vars: &HashMap<&'a str, Option<&'a Any<'a>>>
+    ) -> Result<Any<'a>, InterpreterError>
+    {
+        let Some(tree) = expr.get_parenthesized() else {
+            return Ok(Any::from(expr));
+        };
+
+        let tree = EvalTree::new(tree, vars);
+
+        tree.evaluate(cx)
     }
 }
 
@@ -114,7 +130,10 @@ impl List<'_> {
 
 impl FunctionBody<'_> {
     pub fn make_static(self) -> FunctionBody<'static> {
-        FunctionBody(self.0.make_static())
+        FunctionBody {
+            args: self.args.into_iter().map(StrExt::make_static).collect(),
+            body: self.body.into_iter().map(|e| e.make_static()).collect()
+        }
     }
 }
 

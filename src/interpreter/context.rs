@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, ops::Deref};
+use std::{collections::HashMap, marker::PhantomData, ops::Deref};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::{ast::expr::{Expr, Tree}, cell::Cell, container::VarsContainer, native::NativeStorage};
@@ -7,12 +7,12 @@ use crate::interpreter::Interpreter;
 use crate::native::error::DeclaredFunctionError;
 use crate::primitives::any::Any;
 
-use super::vars::{OwnedStorage, VarsStorage};
+use super::{eval_tree::EvalTree, vars::{OwnedStorage, VarsStorage}};
 
 pub struct Context<'interpreter, 'inner> {
     interpreter: &'interpreter Interpreter<'inner>,
     local_variables: Cell<VarsStorage<'inner>>,
-    root: bool
+    root: bool,
 }
 
 impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
@@ -20,7 +20,7 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         Self {
             interpreter,
             local_variables: Cell::new(VarsStorage::new()),
-            root: true
+            root: true,
         }
     }
 
@@ -61,7 +61,7 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         Self {
             interpreter: self.interpreter,
             local_variables: self.local_variables.clone(),
-            root: false
+            root: false,
         }
     }
 
@@ -71,15 +71,24 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
     }
 
     pub fn eval_any(&mut self, item: &Any<'inner>) -> Result<Any<'inner>, InterpreterError> {
-        match item {
+        /*match item {
             Any::Expression(expr) => self.eval(expr),
             other => Ok(other.clone())
-        }
+        }*/
+        self.eval(item)
     }
 
-    pub fn eval(&mut self, expr: &Expr<'inner>) -> Result<Any<'inner>, InterpreterError> {
+    
+
+    pub fn eval_expr(&mut self, expr: &Expr<'inner>) -> Result<Any<'inner>, InterpreterError> {
+        self.eval(&Any::from(expr))
+    }
+
+    pub fn eval(&mut self, expr: &Any<'inner>) -> Result<Any<'inner>, InterpreterError> {
+        let Some(expr) = expr.get_expression() else { return Ok(expr.clone()); };
+
         match expr {
-            Expr::Parenthesized(tree) => self.eval_tree(tree),
+            Expr::Parenthesized(tree) => self.eval_tree(&EvalTree::new_singleton(tree)),
             other => Ok(Any::from(other))
         }
     }
@@ -101,19 +110,27 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
             }
         }
 
-        
+        let mut iter = fun.body.body.iter().enumerate();
 
-        todo!()
+        while let Some((idx, expr)) = iter.next() {
+            if idx == fun.body.body.len() - 1 {
+                return self.call_maybe_tree(expr)
+            } else {
+                self.call_maybe_tree(expr)?;
+            }
+        }
+
+        Ok(Any::Void(()))
     }
 
-    pub fn eval_tree(&mut self, tree: &Tree<'inner>) -> Result<Any<'inner>, InterpreterError> {
+    pub fn eval_tree(&mut self, tree: &EvalTree<'inner>) -> Result<Any<'inner>, InterpreterError> {
         let node = tree.node.as_ref().ok_or(InterpreterError::MissingTreeNode)?;
 
-        let Some(fun) = node.get_ident() else {
-            return Ok(Any::from(node));
+        let Some(fun) = node.get_expression().map(|n| n.get_ident()).flatten() else {
+            return Ok(node.clone());
         };
 
-        let children = tree.children.iter().map(|c| self.eval(c))
+        let children = tree.children.iter().map(|c| self.eval(&c))
             .collect::<Result<Vec<_>, InterpreterError>>()?;
 
         if self.interpreter.is_native(fun) {
@@ -123,6 +140,28 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         } else {
             Err(InterpreterError::UndefinedFunction(fun.to_string()))
         }
+    }
+
+    fn call_maybe_tree(&mut self, expr: &Expr<'inner>) -> Result<Any<'inner>, InterpreterError> {
+        match expr {
+            Expr::Parenthesized(p) => self.call_eval_tree(p),
+            other => Ok(Any::from(other))
+        }
+    }
+
+    fn call_eval_tree(&mut self, tree: &Tree<'inner>) -> Result<Any<'inner>, InterpreterError> {
+        let mut map = HashMap::new();
+
+        for (k, v) in &self.interpreter.vars().table {
+            map.insert(k.as_str(), Some(v.deref()));
+        }
+
+        for (k, v) in &self.local_variables.table {
+            map.insert(k, Some(v.deref()));
+        }
+
+        EvalTree::new(&tree, unsafe { std::mem::transmute(&map) })
+            .evaluate(self)
     }
 
     pub fn get_local_var(&self, name: &str) -> Option<&Any<'inner>> {

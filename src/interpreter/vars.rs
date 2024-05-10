@@ -6,7 +6,7 @@ use crate::{cell::Cell, container::VarsContainer, primitives::any::Any};
 
 #[derive(Clone)]
 pub struct VarsStorage<'a> {
-    table: HashMap<String, Cell<Any<'a>>>
+    pub table: HashMap<String, Cell<Any<'a>>>
 }
 
 impl<'a> VarsStorage<'a> {
@@ -32,7 +32,7 @@ impl<'a> VarsStorage<'a> {
 }
 
 pub struct OwnedStorage {
-    table: HashMap<String, Cell<Any<'static>>>
+    pub table: HashMap<String, Cell<Any<'static>>>
 }
 
 impl OwnedStorage {
