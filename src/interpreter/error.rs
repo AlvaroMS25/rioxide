@@ -11,4 +11,6 @@ pub enum InterpreterError {
     NativeError(#[from] NativeFnError),
     #[error("Declared function error: {0}")]
     DeclaredFnError(#[from] DeclaredFunctionError),
+    #[error("Unknown identifier: {0}")]
+    UnknownIdentifier(String)
 }

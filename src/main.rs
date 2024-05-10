@@ -74,13 +74,14 @@ fn repl() -> Result<(), Box<dyn Error>> {
             Err(e) => {
                 eprintln!("Error parsing abstract syntax tree, error: {e}");
                 buf.clear();
+                print!("> ");
                 continue;
             }
         };
 
         let i = Interpreter::with_vars(ast, vars);
         if let Err(e) = i.run() {
-            eprintln!("{e}");
+            eprintln!("Runtime error: {e}");
         }
         vars = i.vars;
         println!("");

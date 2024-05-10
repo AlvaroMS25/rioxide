@@ -1,7 +1,7 @@
 use std::collections::{HashMap, LinkedList};
 use std::fmt::{self, Write};
 use clap::arg;
-use crate::ast::expr::Expr;
+use crate::ast::expr::{Expr, Tree};
 use crate::display::InterpreterDisplay;
 use crate::ext::StrExt;
 use crate::interpreter::eval_tree::EvalTree;
@@ -128,22 +128,44 @@ impl List<'_> {
     }
 }
 
-impl FunctionBody<'_> {
+impl<'a> FunctionBody<'a> {
     pub fn make_static(self) -> FunctionBody<'static> {
         FunctionBody {
             args: self.args.into_iter().map(StrExt::make_static).collect(),
             body: self.body.into_iter().map(|e| e.make_static()).collect()
         }
     }
+
+    fn parse(args: &Vec<Expr<'a>>, expr: &Tree<'a>) -> Result<FunctionBody<'a>, InterpreterError> {
+        let mut body_args = Vec::with_capacity(args.len());
+
+        for arg in args.iter() {
+            body_args.push(arg.get_ident().ok_or(DeclaredFunctionError::InvalidExpression)?);
+        }
+
+        todo!()
+    }
 }
 
-impl Function<'_> {
+impl<'a> Function<'a> {
     pub fn make_static(self) -> Function<'static> {
         Function {
             name: self.name.make_static(),
             body: self.body.make_static(),
             arity: self.arity
         }
+    }
+
+    pub fn parse_from(left: &Tree<'a>, right: &Tree<'a>) -> Result<Function<'a>, InterpreterError> {
+        let arity = left.children.len();
+        let name = left.node.as_ref().unwrap().get_ident().unwrap();
+        let body = FunctionBody::parse(&left.children, right)?;
+        
+        Ok(Function {
+            name,
+            arity: Some(arity as u8),
+            body
+        })
     }
 }
 

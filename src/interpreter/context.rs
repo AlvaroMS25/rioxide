@@ -85,12 +85,23 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
     }
 
     pub fn eval(&mut self, expr: &Any<'inner>) -> Result<Any<'inner>, InterpreterError> {
-        let Some(expr) = expr.get_expression() else { return Ok(expr.clone()); };
-
         match expr {
-            Expr::Parenthesized(tree) => self.eval_tree(&EvalTree::new_singleton(tree)),
-            other => Ok(Any::from(other))
+            Any::Expression(e) if e.is_parenthesized() 
+                => self.eval_tree(&EvalTree::new_singleton(unsafe { e.get_parenthesized_unchecked() })),
+            Any::Expression(e) => match e {
+                Expr::Ident(i) => self.get_ident(i),
+                Expr::Parenthesized(p) => self.eval_tree(&EvalTree::new_singleton(p)),
+                other => Ok(Any::from(other))
+            },
+            other => Ok(other.clone()),
         }
+    }
+
+    pub fn get_ident(&self, ident: &str) -> Result<Any<'inner>, InterpreterError> {
+        self.get_local_var(ident)
+            .or_else(|| self.interpreter.vars().get(ident))
+            .cloned()
+            .ok_or(InterpreterError::UnknownIdentifier(ident.to_string()))
     }
 
     pub fn call_declared(
@@ -130,8 +141,9 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
             return Ok(node.clone());
         };
 
-        let children = tree.children.iter().map(|c| self.eval(&c))
-            .collect::<Result<Vec<_>, InterpreterError>>()?;
+        let children = tree.children.iter().map(|c| c.clone()/*self.eval(&c)*/)
+            //.collect::<Result<Vec<_>, InterpreterError>>()?;
+            .collect::<Vec<_>>();
 
         if self.interpreter.is_native(fun) {
             Ok(self.interpreter.storage.get(fun).unwrap().call(self, children.as_slice())?)
