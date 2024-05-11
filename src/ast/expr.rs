@@ -89,6 +89,24 @@ impl<'a> Tree<'a> {
 
         new_tree
     }
+
+    pub fn as_vec(&self) -> Vec<Expr<'a>> {
+        let mut vec = Vec::with_capacity(self.children.len() + if self.node.is_some() {
+            1
+        } else {
+            0
+        });
+
+        if let Some(node) = &self.node {
+            vec.push(*node.clone());
+        }
+
+        for item in &self.children {
+            vec.push(item.clone());
+        }
+
+        vec
+    }
 }
 
 impl InterpreterDisplay for Expr<'_> {

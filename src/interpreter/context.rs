@@ -125,9 +125,9 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
 
         while let Some((idx, expr)) = iter.next() {
             if idx == fun.body.body.len() - 1 {
-                return self.call_maybe_tree(expr)
+                return self.eval_any(expr)
             } else {
-                self.call_maybe_tree(expr)?;
+                self.eval_any(expr)?;
             }
         }
 
