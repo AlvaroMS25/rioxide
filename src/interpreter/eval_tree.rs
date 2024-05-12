@@ -4,6 +4,7 @@ use crate::{ast::expr::{Expr, Tree}, primitives::any::Any};
 
 use super::{context::Context, error::InterpreterError};
 
+#[derive(Clone, Debug)]
 pub struct EvalTree<'a> {
     pub node: Option<Any<'a>>,
     pub children: Vec<Any<'a>>,
@@ -49,7 +50,7 @@ impl<'a> EvalTree<'a> {
     }
 }
 
-fn into_any<'a>(item: &Expr<'a>, vars: &HashMap<&'a str, Option<&'a Any<'a>>>) -> Any<'a> {
+pub fn into_any<'a>(item: &Expr<'a>, vars: &HashMap<&'a str, Option<&'a Any<'a>>>) -> Any<'a> {
     match item {
         Expr::Ident(i) if vars.contains_key(i) => {
             vars.get(i).cloned().flatten().unwrap().clone()

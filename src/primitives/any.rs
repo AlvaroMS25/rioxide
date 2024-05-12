@@ -4,6 +4,7 @@ use std::ops::Deref;
 use std::sync::Arc;
 use crate::ast::expr::Expr;
 use crate::display::InterpreterDisplay;
+use crate::interpreter::any::AnyEval;
 use crate::macros::get_enum;
 use crate::primitives::composed::Composed;
 use crate::primitives::DataType;
@@ -41,7 +42,18 @@ impl<'a> From<&Box<Expr<'a>>> for Any<'a> {
     }
 }
 
-impl Any<'_> {
+impl<'a> From<&AnyEval<'a>> for Any<'a> {
+    fn from(value: &AnyEval<'a>) -> Self {
+        match value {
+            AnyEval::Primitive(p) => Any::Primitive(p.clone()),
+            AnyEval::Composed(c) => Any::Composed(c.clone()),
+            AnyEval::Void(_) => Any::Void(()),
+            other => Any::Expression(other.clone().to_expr())
+        }
+    }
+}
+
+impl<'a> Any<'a> {
     pub fn make_static(self) -> Any<'static> {
         use Any::*;
         match self {
@@ -49,6 +61,14 @@ impl Any<'_> {
             Composed(c) => Composed(Box::new(c.make_static())),
             Expression(e) => Expression(e.make_static()),
             Void(()) => Void(())
+        }
+    }
+
+    pub fn into_expr(self) -> Option<Expr<'a>> {
+        match self {
+            Any::Expression(e) => Some(e),
+            Any::Primitive(p) => Some(Expr::Primitive(p)),
+            _ => None
         }
     }
 }
