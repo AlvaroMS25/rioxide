@@ -190,7 +190,7 @@ impl<'a> Function<'a> {
 
         assert_eq!(*tree.node.as_ref().unwrap().get_ident().unwrap(), "lambda");
 
-         let args = signature.children[1..].iter().map(Any::from).collect::<Vec<_>>();
+         let args = tree.children[1..].iter().map(Any::from).collect::<Vec<_>>();
 
         Ok(Function {
             name,

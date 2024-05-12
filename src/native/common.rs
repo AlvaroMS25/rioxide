@@ -37,7 +37,10 @@ pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>,
             // Expressions like (define (a x) (+ x x)) are parenthesized on second argument,
             // just take the "a" part from the first tree and pass it to FunctionBody parser
             => Any::Composed(Box::new(Composed::Function(Function::parse_define(args)?))),
-        Any::Expression(Expr::Ident(fn_name)) if args[1].is_expression()
+        Any::Expression(Expr::Ident(fn_name))
+            if args[1].is_expression()
+                && unsafe { args[1].get_expression_unchecked() }.get_ident().map(|i| *i == "lambda")
+                .unwrap_or(false)
             => Any::Composed(Box::new(Composed::Function(Function::from_lambda(
             fn_name,
             unsafe {
