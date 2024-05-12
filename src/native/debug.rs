@@ -1,23 +1,24 @@
 use crate::{interpreter::{context::Context, error::InterpreterError}, primitives::{any::Any, DataType}};
+use crate::interpreter::any::AnyEval;
 
 use super::error::NativeFnError;
 
-pub fn ast<'a>(cx: &mut Context<'_, 'a>, _: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+pub fn ast<'a>(cx: &mut Context<'_, 'a>, _: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
     println!("{:?}", cx.interpreter().ast());
 
     Ok(Any::Void(()))
 }
 
-pub fn clear_terminal<'a>(cx: &mut Context, _: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+pub fn clear_terminal<'a>(cx: &mut Context, _: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
     print!("\x1B[2J\x1B[1;1H");
     Ok(Any::Void(()))
 }
 
-pub fn exit<'a>(_: &mut Context, _: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+pub fn exit<'a>(_: &mut Context, _: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
     std::process::exit(0);
 }
 
-pub fn ast_with<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+pub fn ast_with<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
     if args.len() < 2 {
         return Err(InterpreterError::NativeError(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }));
     }
@@ -37,10 +38,10 @@ pub fn ast_with<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a
         println!("{:?}", cx.interpreter().ast());
     }
 
-    cx.eval_any(&args[1])
+    cx.eval(&args[1])
 }
 
-pub fn show_memory<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+pub fn show_memory<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
     if args.len() < 1 {
         return Err(InterpreterError::NativeError(NativeFnError::ArityMismatch { expected: 1, got: args.len() as _ }));
     }

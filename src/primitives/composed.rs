@@ -4,6 +4,7 @@ use clap::arg;
 use crate::ast::expr::{Expr, Tree};
 use crate::display::InterpreterDisplay;
 use crate::ext::StrExt;
+use crate::interpreter::any::AnyEval;
 use crate::interpreter::eval_tree::EvalTree;
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
@@ -19,7 +20,7 @@ pub struct List<'a>(pub LinkedList<Any<'a>>);
 #[derive(Clone, Debug)]
 pub struct FunctionBody<'a> {
     pub args: Vec<&'a str>,
-    pub body: Vec<Any<'a>>,
+    pub body: Vec<AnyEval<'a>>,
 }
 
 #[derive(Clone, Debug)]
@@ -79,17 +80,15 @@ impl<'a> FunctionBody<'a> {
 
     fn eval_expr(
         cx: &mut Context<'_, 'a>,
-        expr: &Any<'a>,
+        expr: &AnyEval<'a>,
         vars: &HashMap<&'a str, Option<&'a Any<'a>>>
     ) -> Result<Any<'a>, InterpreterError>
     {
-        let Some(tree) = expr.get_expression().map(|e| e.get_parenthesized()).flatten() else {
-            return Ok(expr.clone());
+        let Some(tree) = expr.get_expression() else {
+            return Ok(Any::from(expr));
         };
 
-        let tree = EvalTree::new(tree, vars);
-
-        tree.evaluate(cx)
+        cx.eval_tree(tree)
     }
 }
 
@@ -136,7 +135,7 @@ impl<'a> FunctionBody<'a> {
         }
     }
 
-    fn parse(args: &Vec<Expr<'a>>, body: Vec<Any<'a>>) -> Result<FunctionBody<'a>, InterpreterError> {
+    fn parse(args: &Vec<AnyEval<'a>>, body: Vec<AnyEval<'a>>) -> Result<FunctionBody<'a>, InterpreterError> {
         let mut body_args = Vec::with_capacity(args.len());
 
         for arg in args.iter() {
@@ -159,7 +158,7 @@ impl<'a> Function<'a> {
         }
     }
 
-    pub fn parse_from(left: &Tree<'a>, right: Vec<Any<'a>>) -> Result<Function<'a>, InterpreterError> {
+    pub fn parse_from(left: &EvalTree<'a>, right: Vec<AnyEval<'a>>) -> Result<Function<'a>, InterpreterError> {
         let arity = left.children.len();
         let name = left.node.as_ref().unwrap().get_ident().unwrap();
         let body = FunctionBody::parse(&left.children, right)?;
@@ -171,26 +170,25 @@ impl<'a> Function<'a> {
         })
     }
 
-    pub fn parse_define(args: &[Any<'a>]) -> Result<Function<'a>, InterpreterError> {
+    pub fn parse_define(args: &[AnyEval<'a>]) -> Result<Function<'a>, InterpreterError> {
         // we know is parenthesized, so just use the unchecked methods
-        let first = unsafe { args[0].get_expression_unchecked().get_parenthesized_unchecked() }.clone();
+        let first = unsafe { args[0].get_expression_unchecked() }.clone();
 
         Self::parse_from(&first, args.iter().skip(1).map(Clone::clone).collect::<Vec<_>>())
     }
 
-    pub fn from_lambda(name: &'a str, tree: Tree<'a>) -> Result<Function<'a>, InterpreterError> {
+    pub fn from_lambda(name: &'a str, tree: EvalTree<'a>) -> Result<Function<'a>, InterpreterError> {
         if tree.children.len() < 2 {
             return Err(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression));
         }
 
-        let signature = tree.children[0].get_parenthesized()
-            .ok_or(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression))?;
+        let signature = tree;
 
         let arity = signature.children.len() + 1;
 
         assert_eq!(*tree.node.as_ref().unwrap().get_ident().unwrap(), "lambda");
 
-         let args = tree.children[1..].iter().map(Any::from).collect::<Vec<_>>();
+         let args = tree.children[1..].iter().map(Clone::clone).collect::<Vec<_>>();
 
         Ok(Function {
             name,

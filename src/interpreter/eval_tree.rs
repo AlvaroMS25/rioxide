@@ -1,13 +1,14 @@
 use std::{collections::HashMap, ops::Deref};
 
 use crate::{ast::expr::{Expr, Tree}, primitives::any::Any};
+use crate::interpreter::any::AnyEval;
 
 use super::{context::Context, error::InterpreterError};
 
 #[derive(Clone, Debug)]
 pub struct EvalTree<'a> {
-    pub node: Option<Any<'a>>,
-    pub children: Vec<Any<'a>>,
+    pub node: Option<AnyEval<'a>>,
+    pub children: Vec<AnyEval<'a>>,
 }
 
 impl<'a> EvalTree<'a> {
@@ -30,8 +31,15 @@ impl<'a> EvalTree<'a> {
 
     pub fn new_singleton(source: &Tree<'a>) -> EvalTree<'a> {
         EvalTree {
-            node: source.node.as_ref().map(|n| Any::from(n)),
-            children: source.children.iter().map(Any::from).collect()
+            node: source.node.as_ref().map(|n| AnyEval::from_expr(*n.clone())),
+            children: source.children.iter().map(|c| AnyEval::from_expr(c.clone())).collect()
+        }
+    }
+
+    pub fn make_static(self) -> EvalTree<'static> {
+        EvalTree {
+            node: self.node.map(|n| n.make_static()),
+            children: self.children.into_iter().map(|c| c.make_static()).collect()
         }
     }
 
@@ -41,7 +49,7 @@ impl<'a> EvalTree<'a> {
         let mut args = Vec::with_capacity(self.children.len());
 
         for child in self.children {
-            args.push(cx.level_down().eval_any(&child)?);
+            args.push(AnyEval::from_any(cx.level_down().eval(&child)?));
         }
 
         self.children = args;
@@ -50,11 +58,11 @@ impl<'a> EvalTree<'a> {
     }
 }
 
-pub fn into_any<'a>(item: &Expr<'a>, vars: &HashMap<&'a str, Option<&'a Any<'a>>>) -> Any<'a> {
+pub fn into_any<'a>(item: &Expr<'a>, vars: &HashMap<&'a str, Option<&'a Any<'a>>>) -> AnyEval<'a> {
     match item {
         Expr::Ident(i) if vars.contains_key(i) => {
-            vars.get(i).cloned().flatten().unwrap().clone()
+            AnyEval::from_any(vars.get(i).cloned().flatten().unwrap().clone())
         },
-        other => Any::from(other)
+        other => AnyEval::from_expr(other.clone())
     }
 }

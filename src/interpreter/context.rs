@@ -104,7 +104,7 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
     pub fn call_declared(
         &mut self,
         fun: &str,
-        args: &[Any<'inner>]
+        args: &[AnyEval<'inner>]
     ) -> Result<Any<'inner>, InterpreterError> {
         let vars = self.interpreter.vars();
         let fun = vars.get(fun).unwrap().get_composed().unwrap().get_function().unwrap();

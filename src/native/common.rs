@@ -1,4 +1,5 @@
 use crate::ast::expr::Expr;
+use crate::interpreter::any::AnyEval;
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
 use crate::native::error::{DeclaredFunctionError, NativeFnError};
@@ -6,7 +7,7 @@ use crate::primitives::any::Any;
 use crate::primitives::composed::{Composed, Function};
 use crate::primitives::DataType;
 
-pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
     if args.len() != 2 {
         return Err(NativeFnError::ArityMismatch {expected: 2, got: args.len() as _}.into());
     }
@@ -39,17 +40,15 @@ pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>,
             => Any::Composed(Box::new(Composed::Function(Function::parse_define(args)?))),
         Any::Expression(Expr::Ident(fn_name))
             if args[1].is_expression()
-                && unsafe { args[1].get_expression_unchecked() }.get_ident().map(|i| *i == "lambda")
-                .unwrap_or(false)
+                && *unsafe { args[1].get_ident_unchecked() } == "lambda"
             => Any::Composed(Box::new(Composed::Function(Function::from_lambda(
             fn_name,
             unsafe {
-                args[1].get_expression_unchecked().get_parenthesized()
-                    .ok_or(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression))?
+                *args[1].get_expression_unchecked()
                     .clone()
             }
         )?))),
-        _ => cx.level_down().eval_any(&args[1])?
+        _ => cx.level_down().eval(&args[1])?
     };
 
     cx

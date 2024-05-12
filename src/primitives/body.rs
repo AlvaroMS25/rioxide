@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::ast::expr::{Expr, Tree};
+use crate::interpreter::any::AnyEval;
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
 use crate::interpreter::eval_tree::{EvalTree};
@@ -7,35 +8,28 @@ use crate::primitives::any::Any;
 use crate::primitives::composed::FunctionBody;
 
 impl<'a> FunctionBody<'a> {
-    fn get_ident(ident: &str, vars: &HashMap<String, Any<'a>>) -> Option<Any<'a>> {
+    fn get_ident(ident: &str, vars: &HashMap<String, AnyEval<'a>>) -> Option<AnyEval<'a>> {
         vars.get(ident).cloned()
     }
 
-    fn substitute_needed(item: Any<'a>, vars: &HashMap<String, Any<'a>>) -> Any<'a> {
+    fn substitute_needed(item: AnyEval<'a>, vars: &HashMap<String, AnyEval<'a>>) -> AnyEval<'a> {
         println!("Called substitute with {item:?}");
+        todo!()
 
-        let Any::Expression(expr) = &item else { return item; };
+        /*let Any::Expression(expr) = &item else { return AnyEval::from_any(item); };
 
         match expr {
             Expr::Ident(i) => return if let Some(item) = Self::get_ident(*i, vars) {
                 item
             } else {
-                item
+                AnyEval::from_any(item)
             },
-            Expr::Parenthesized(tree) => {
-                todo!()
-            },
-            _ => item
-        }
-        /*match item {
-            Any::Expression(Expr::Ident(i)) if vars.contains_key(i) => {
-                vars.get(i).cloned().unwrap()
-            },
-            other => other
+            Expr::Parenthesized(tree) => AnyEval::Expression(Box::new(EvalTree::new_singleton(tree))),
+            _ => AnyEval::from_any(item)
         }*/
     }
 
-    fn prepare(&mut self, args: &[Any<'a>]) {
+    fn prepare(&self, args: &[AnyEval<'a>]) -> Vec<AnyEval<'a>> {
         println!("Before preparing: {:?}", self.body);
 
         let map = self.args.iter().zip(args.iter())
@@ -44,25 +38,27 @@ impl<'a> FunctionBody<'a> {
 
         println!("Args map: {map:?}");
 
-        for item in self.body.iter_mut() {
-            let prev = std::mem::replace(item, Any::Void(()));
-            let _ = std::mem::replace(item, Self::substitute_needed(prev, &map));
+        let mut out = Vec::with_capacity(self.body.len());
+
+        for item in self.body.iter() {
+            out.push(Self::substitute_needed(item.clone(), &map));
         }
 
-        println!("After preparing: {:?}", self.body);
+        println!("After preparing: {out:?}");
+        out
     }
 
-    pub fn call(mut self, cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
+    pub fn call(&self, cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
         self.prepare(args);
 
         let len = self.body.len();
-        let mut iter = self.body.into_iter().enumerate();
+        let mut iter = self.body.iter().enumerate();
 
         while let Some((idx, expr)) = iter.next() {
             if idx == len - 1 {
-                return cx.level_down().eval_any(&expr)
+                return cx.level_down().eval(&expr)
             } else {
-                cx.level_down().eval_any(&expr)?;
+                cx.level_down().eval(expr)?;
             }
         }
 

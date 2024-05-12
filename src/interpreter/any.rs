@@ -1,4 +1,6 @@
 use crate::ast::expr::{Expr, Tree};
+use crate::ext::StrExt;
+use crate::interpreter::any::AnyEval::Primitive;
 use crate::interpreter::eval_tree::EvalTree;
 use crate::macros::get_enum;
 use crate::primitives::any::Any;
@@ -27,6 +29,19 @@ impl<'a> AnyEval<'a> {
         }
     }
 
+    pub fn make_static(self) -> AnyEval<'static> {
+        use AnyEval::*;
+
+        match self {
+            Primitive(p) => Primitive(p.make_static()),
+            Composed(c) => Composed(Box::new(c.make_static())),
+            Expression(e) => Expression(Box::new(e.make_static())),
+            Ident(i) => Ident(i.make_static()),
+            RawQuoted(q) => RawQuoted(q.make_static()),
+            Void(_) => Void(())
+        }
+    }
+
     pub fn from_any(item: Any<'a>) -> AnyEval<'a> {
         match item {
             Any::Primitive(p) => AnyEval::Primitive(p),
@@ -40,8 +55,8 @@ impl<'a> AnyEval<'a> {
         match self {
             AnyEval::Expression(e) => {
                 Expr::Parenthesized(Tree {
-                    node: e.node.map(|i| i.into_expr()).flatten().map(Box::new),
-                    children: e.children.into_iter().filter_map(|i| i.into_expr()).collect()
+                    node: e.node.map(|i| i.to_expr()).map(Box::new),
+                    children: e.children.into_iter().map(|i| i.to_expr()).collect()
                 })
             },
             AnyEval::Ident(i) => Expr::Ident(i),
