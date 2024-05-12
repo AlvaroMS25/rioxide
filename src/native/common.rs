@@ -49,7 +49,7 @@ pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[Any<'a>]) -> Result<Any<'a>,
                     .clone()
             }
         )?))),
-        other => cx.level_down().eval_any(&args[1])?
+        _ => cx.level_down().eval_any(&args[1])?
     };
 
     cx
