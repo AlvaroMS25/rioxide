@@ -7,7 +7,7 @@ use crate::native::error::NativeFnError;
 use crate::primitives::composed::{Composed, List, Pair};
 
 pub fn cons<'a>(cx: &mut Context<'_, 'a>, inputs: &[Any<'a>]) -> Result<Any<'a>, InterpreterError> {
-    if inputs.len() > 2 {
+    if inputs.len() != 2 {
         return Err(NativeFnError::ArityMismatch {expected: 2, got: inputs.len() as u8}.into());
     }
 
