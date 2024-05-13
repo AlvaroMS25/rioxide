@@ -41,6 +41,7 @@ pub fn define2<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any
     };
 
     println!("Second match");
+    println!("Define on {args:?}");
     let item = match &args[0] {
         AnyEval::Ident(fn_name)
             if args[1].is_expression()
@@ -57,9 +58,10 @@ pub fn define2<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any
                     }
                 )?)))
             },
-        other => {
+        AnyEval::Expression(_) => AnyEval::Composed(Box::new(Composed::Function(Function::parse_define(args)?))),
+        _ => {
             println!("Other branch");
-            AnyEval::from_any(cx.level_down().eval(other)?)
+            AnyEval::from_any(cx.level_down().eval(&args[1])?)
         }
     };
 
