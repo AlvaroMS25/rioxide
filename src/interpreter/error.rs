@@ -12,5 +12,7 @@ pub enum InterpreterError {
     #[error("Declared function error: {0}")]
     DeclaredFnError(#[from] DeclaredFunctionError),
     #[error("Unknown identifier: {0}")]
-    UnknownIdentifier(String)
+    UnknownIdentifier(String),
+    #[error("Feature not yet implemented: {0}")]
+    NotYetImplemented(&'static str)
 }
