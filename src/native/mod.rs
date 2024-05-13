@@ -1,9 +1,7 @@
-mod comparison;
 pub mod error;
-mod compose;
-mod debug;
-mod common;
 pub mod function;
+mod r#impl;
+use r#impl::*;
 
 use error::NativeFnError;
 

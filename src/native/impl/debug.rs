@@ -1,7 +1,7 @@
 use crate::{interpreter::{context::Context, error::InterpreterError}, primitives::{any::Any, DataType}};
 use crate::interpreter::any::AnyEval;
 
-use super::error::NativeFnError;
+use super::super::error::NativeFnError;
 
 pub fn ast<'a>(cx: &mut Context<'_, 'a>, _: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
     println!("{:?}", cx.interpreter().ast());
