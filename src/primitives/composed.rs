@@ -139,7 +139,6 @@ impl<'a> FunctionBody<'a> {
         let mut body_args = Vec::with_capacity(args.len());
 
         for arg in args.iter() {
-            println!("Arg {arg:?}");
             body_args.push(*arg.get_ident().ok_or(DeclaredFunctionError::InvalidExpression)?);
         }
 
@@ -179,12 +178,11 @@ impl<'a> Function<'a> {
     }
 
     pub fn from_lambda(name: &'a str, tree: EvalTree<'a>) -> Result<Function<'a>, InterpreterError> {
-        println!("Lamba tree: {tree:?}");
         if tree.children.len() < 2 {
             return Err(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression));
         }
 
-        let arity = tree.children.len() + 1;
+        let arity = tree.children.len() - 1;
 
         assert_eq!(*tree.node.as_ref().unwrap().get_ident().unwrap(), "lambda");
 

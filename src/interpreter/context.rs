@@ -117,8 +117,7 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
                 }))
             }
         }
-        println!("Call declared {}", fun.name);
-        fun.clone().body.call(self, args)
+        fun.body.call(&mut self.level_down(), args)
 
         /*let mut iter = fun.body.body.iter().enumerate();
 

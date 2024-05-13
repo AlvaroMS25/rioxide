@@ -13,30 +13,26 @@ impl<'a> FunctionBody<'a> {
     }
 
     fn substitute_needed(item: AnyEval<'a>, vars: &HashMap<String, AnyEval<'a>>) -> AnyEval<'a> {
-        println!("Called substitute with {item:?}");
-        todo!()
+        use AnyEval::*;
 
-        /*let Any::Expression(expr) = &item else { return AnyEval::from_any(item); };
-
-        match expr {
-            Expr::Ident(i) => return if let Some(item) = Self::get_ident(*i, vars) {
-                item
+        match &item {
+            Ident(i) => return if let Some(node) = Self::get_ident(i, vars) {
+                node
             } else {
-                AnyEval::from_any(item)
+                item
             },
-            Expr::Parenthesized(tree) => AnyEval::Expression(Box::new(EvalTree::new_singleton(tree))),
-            _ => AnyEval::from_any(item)
-        }*/
+            Expression(e) => Expression(Box::new(EvalTree {
+                node: e.node.as_ref().map(|n| Self::substitute_needed(n.clone(), vars)),
+                children: e.children.iter().map(|c| Self::substitute_needed(c.clone(), vars)).collect()
+            })),
+            other => other.clone(),
+        }
     }
 
     fn prepare(&self, args: &[AnyEval<'a>]) -> Vec<AnyEval<'a>> {
-        println!("Before preparing: {:?}", self.body);
-
         let map = self.args.iter().zip(args.iter())
             .map(|(k, v)| (k.to_string(), v.clone()))
             .collect::<HashMap<_, _>>();
-
-        println!("Args map: {map:?}");
 
         let mut out = Vec::with_capacity(self.body.len());
 
@@ -44,21 +40,20 @@ impl<'a> FunctionBody<'a> {
             out.push(Self::substitute_needed(item.clone(), &map));
         }
 
-        println!("After preparing: {out:?}");
         out
     }
 
     pub fn call(&self, cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-        self.prepare(args);
+        let body = self.prepare(args);
 
-        let len = self.body.len();
-        let mut iter = self.body.iter().enumerate();
+        let len = body.len();
+        let mut iter = body.into_iter().enumerate();
 
         while let Some((idx, expr)) = iter.next() {
             if idx == len - 1 {
                 return cx.level_down().eval(&expr)
             } else {
-                cx.level_down().eval(expr)?;
+                cx.level_down().eval(&expr)?;
             }
         }
 

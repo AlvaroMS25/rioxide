@@ -30,7 +30,6 @@ pub fn define2<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any
     });
 
 
-    println!("First match");
     let ident = match &args[0] {
         AnyEval::Ident(i) => i.to_string(),
         AnyEval::Expression(tree) => tree.node.as_ref().map(|n| n.get_ident())
@@ -40,8 +39,6 @@ pub fn define2<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any
         _ => return Err(ident_error(&args[0]))
     };
 
-    println!("Second match");
-    println!("Define on {args:?}");
     let item = match &args[0] {
         AnyEval::Ident(fn_name)
             if args[1].is_expression()
@@ -60,10 +57,11 @@ pub fn define2<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any
             },
         AnyEval::Expression(_) => AnyEval::Composed(Box::new(Composed::Function(Function::parse_define(args)?))),
         _ => {
-            println!("Other branch");
             AnyEval::from_any(cx.level_down().eval(&args[1])?)
         }
     };
+
+    println!("Parsed {item:?}");
 
     cx
         .vars_mut()
