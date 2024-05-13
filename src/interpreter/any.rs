@@ -1,6 +1,5 @@
 use crate::ast::expr::{Expr, Tree};
 use crate::ext::StrExt;
-use crate::interpreter::any::AnyEval::Primitive;
 use crate::interpreter::eval_tree::EvalTree;
 use crate::macros::get_enum;
 use crate::primitives::any::Any;
