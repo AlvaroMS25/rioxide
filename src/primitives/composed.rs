@@ -97,6 +97,7 @@ impl InterpreterDisplay for Composed<'_> {
         match self {
             Self::List(l) => l.fmt(f, interpreter),
             Self::Pair(p) => p.fmt(f, interpreter),
+            Self::Function(fun) => fun.fmt(f, interpreter),
             _ => Ok(())
         }
     }

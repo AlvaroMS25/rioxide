@@ -1,7 +1,7 @@
 use std::{collections::HashMap, marker::PhantomData, ops::Deref};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use crate::{ast::expr::{Expr, Tree}, cell::Cell, container::VarsContainer, native::NativeStorage};
+use crate::{ast::expr::{Expr, Tree}, cell::Cell, container::VarsContainer, native::NativeStorage, primitives::composed::{Composed, Function, FunctionBody}};
 use crate::interpreter::any::AnyEval;
 use crate::interpreter::error::InterpreterError;
 use crate::interpreter::Interpreter;
@@ -94,10 +94,11 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
         }
     }
 
-    pub fn get_ident(&self, ident: &str) -> Result<Any<'inner>, InterpreterError> {
+    pub fn get_ident(&self, ident: &'inner str) -> Result<Any<'inner>, InterpreterError> {
         self.get_local_var(ident)
             .or_else(|| self.interpreter.vars().get(ident))
             .cloned()
+            .or_else(|| self.get_native_disguised_var(ident))
             .ok_or(InterpreterError::UnknownIdentifier(ident.to_string()))
     }
 
@@ -154,5 +155,22 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
 
     pub fn get_local_var(&self, name: &str) -> Option<&Any<'inner>> {
         self.local_variables.get(name)
+    }
+
+    fn get_native_disguised_var(&self, name: &'inner str) -> Option<Any<'inner>> {
+        if self.interpreter.is_native(name) {
+            Some(Any::Composed(Box::new(Composed::Function {
+                0: Function {
+                    name: name,
+                    body: FunctionBody {
+                        args: Vec::new(),
+                        body: Vec::new(),
+                    },
+                    arity: None
+                }
+            })))
+        } else {
+            None
+        }
     }
 }
