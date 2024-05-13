@@ -139,6 +139,7 @@ impl<'a> FunctionBody<'a> {
         let mut body_args = Vec::with_capacity(args.len());
 
         for arg in args.iter() {
+            println!("Arg {arg:?}");
             body_args.push(*arg.get_ident().ok_or(DeclaredFunctionError::InvalidExpression)?);
         }
 
@@ -178,22 +179,25 @@ impl<'a> Function<'a> {
     }
 
     pub fn from_lambda(name: &'a str, tree: EvalTree<'a>) -> Result<Function<'a>, InterpreterError> {
+        println!("Lamba tree: {tree:?}");
         if tree.children.len() < 2 {
             return Err(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression));
         }
 
-        let signature = tree;
-
-        let arity = signature.children.len() + 1;
+        let arity = tree.children.len() + 1;
 
         assert_eq!(*tree.node.as_ref().unwrap().get_ident().unwrap(), "lambda");
 
-         let args = tree.children[1..].iter().map(Clone::clone).collect::<Vec<_>>();
+         let args = (&tree.children[1..]).iter().map(Clone::clone).collect::<Vec<_>>();
 
         Ok(Function {
             name,
             arity: Some(arity as _),
-            body: FunctionBody::parse(&signature.children, args)?
+            body: FunctionBody::parse(
+                &tree.children[0].get_expression()
+                    .ok_or(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression))?
+                    .ident_vec(),
+                args)?
         })
     }
 }

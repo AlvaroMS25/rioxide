@@ -56,6 +56,24 @@ impl<'a> EvalTree<'a> {
 
         cx.eval_tree(&self)
     }
+
+    pub fn ident_vec(&self) -> Vec<AnyEval<'a>> {
+        let mut out = Vec::with_capacity(self.children.len() + 1);
+
+        if let Some(node) = &self.node {
+            if let Some(i) = node.get_ident() {
+                out.push(AnyEval::Ident(*i));
+            }
+        }
+
+        for i in &self.children {
+            if let Some(i) = i.get_ident() {
+                out.push(AnyEval::Ident(*i));
+            }
+        }
+
+        out
+    }
 }
 
 pub fn into_any<'a>(item: &Expr<'a>, vars: &HashMap<&'a str, Option<&'a Any<'a>>>) -> AnyEval<'a> {

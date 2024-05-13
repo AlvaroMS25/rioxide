@@ -8,6 +8,10 @@ use crate::primitives::composed::{Composed, Function};
 use crate::primitives::DataType;
 
 pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    define2(cx, args).map(|i| Any::from(&i))
+}
+
+pub fn define2<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<AnyEval<'a>, InterpreterError> {
     if args.len() != 2 {
         return Err(NativeFnError::ArityMismatch {expected: 2, got: args.len() as _}.into());
     }
@@ -25,35 +29,43 @@ pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<
         got: format!("{:?}", item)
     });
 
-    let ident = match args[0].get_expression().ok_or_else(|| ident_error(&args[0]))? {
-        Expr::Ident(i) => i.to_string(),
-        Expr::Parenthesized(tree) => tree.node.as_ref().map(|n| n.get_ident()).flatten()
+
+    println!("First match");
+    let ident = match &args[0] {
+        AnyEval::Ident(i) => i.to_string(),
+        AnyEval::Expression(tree) => tree.node.as_ref().map(|n| n.get_ident())
+            .flatten()
             .ok_or(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression))?
             .to_string(),
         _ => return Err(ident_error(&args[0]))
     };
 
+    println!("Second match");
     let item = match &args[0] {
-        Any::Expression(Expr::Parenthesized(_))
-            // Expressions like (define (a x) (+ x x)) are parenthesized on second argument,
-            // just take the "a" part from the first tree and pass it to FunctionBody parser
-            => Any::Composed(Box::new(Composed::Function(Function::parse_define(args)?))),
-        Any::Expression(Expr::Ident(fn_name))
+        AnyEval::Ident(fn_name)
             if args[1].is_expression()
-                && *unsafe { args[1].get_ident_unchecked() } == "lambda"
-            => Any::Composed(Box::new(Composed::Function(Function::from_lambda(
-            fn_name,
-            unsafe {
-                *args[1].get_expression_unchecked()
-                    .clone()
-            }
-        )?))),
-        _ => cx.level_down().eval(&args[1])?
+                && unsafe { args[1].get_expression_unchecked() }.node
+                    .as_ref()
+                    .map(|n| n.get_ident().map(|i| *i == "lambda"))
+                    .flatten().unwrap_or(false)
+            => {
+                AnyEval::Composed(Box::new(Composed::Function(Function::from_lambda(
+                    fn_name,
+                    unsafe {
+                        *args[1].get_expression_unchecked()
+                            .clone()
+                    }
+                )?)))
+            },
+        other => {
+            println!("Other branch");
+            AnyEval::from_any(cx.level_down().eval(other)?)
+        }
     };
 
     cx
         .vars_mut()
-        .insert(&ident, item);
+        .insert(&ident, Any::from(&item));
 
-    Ok(Any::Void(()))
+    Ok(AnyEval::Void(()))
 }

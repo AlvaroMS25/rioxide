@@ -136,8 +136,8 @@ impl<'interpreter, 'inner> Context<'interpreter, 'inner> {
     pub fn eval_tree(&mut self, tree: &EvalTree<'inner>) -> Result<Any<'inner>, InterpreterError> {
         let node = tree.node.as_ref().ok_or(InterpreterError::MissingTreeNode)?;
 
-        let Some(fun) = node.get_expression().map(|n| n.get_ident()).flatten() else {
-            return Ok(node.clone());
+        let Some(fun) = node.get_ident() else {
+            return Ok(Any::from(node));
         };
 
         let children = tree.children.iter().map(|c| c.clone()/*self.eval(&c)*/)

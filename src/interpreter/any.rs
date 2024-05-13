@@ -37,7 +37,7 @@ impl<'a> AnyEval<'a> {
             Composed(c) => Composed(Box::new(c.make_static())),
             Expression(e) => Expression(Box::new(e.make_static())),
             Ident(i) => Ident(i.make_static()),
-            RawQuoted(q) => RawQuoted(q.make_static()),
+            RawQuoted(q) => RawQuoted(Box::new(q.make_static())),
             Void(_) => Void(())
         }
     }

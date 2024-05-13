@@ -21,10 +21,6 @@ mod macros;
 mod ext;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    
-
-    let filename = "testfile.rkt";
-
     let cli = Cli::parse();
 
     match cli.command {
