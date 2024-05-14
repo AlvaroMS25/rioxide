@@ -7,40 +7,95 @@ use crate::primitives::DataType;
 
 use super::super::error::NativeFnError;
 
-pub fn eq<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-    let items = args.iter().map(|i| cx.level_down().eval(i))
-        .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
-
+pub fn with_comparable_window2<'a, F>(
+    items: &[Any<'a>],
+    predicate: F,
+) -> Result<Any<'a>, NativeFnError>
+where
+    F: Fn(ComparisonOperator, ComparisonOperator) -> bool,
+{
     let construct_false = || Any::Primitive(DataType::Boolean(false));
-    let mut left_idx = 0;
 
-    for item in items.windows(2) {
-        assert!(item.len() == 2);
-        let (left, right) = (&item[0], &item[1]);
+    for window in items.windows(2) {
+        assert!(window.len() == 2);
+        let (left, right) = (&window[0], &window[1]);
 
         if !left.is_primitive() || !right.is_primitive() {
-            todo!();
+            return Err(NativeFnError::InvalidType(format!("{} and {}", left.variant_name(), right.variant_name())));
         }
 
-        let Any::Primitive(left) = left else { unreachable!(); };
-        let Any::Primitive(right) = right else { unreachable!(); };
+        let Any::Primitive(left) = left else { 
+            return Err(NativeFnError::InvalidType(left.variant_name().to_string()));
+        };
+        let Any::Primitive(right) = right else { 
+            return Err(NativeFnError::InvalidType(right.variant_name().to_string()));
+        };
 
         let (left, right) = (
             ComparisonOperator::from_primitive(left),
             ComparisonOperator::from_primitive(right)
-        ).untuple_none().ok_or(InterpreterError::NativeError(NativeFnError::UnexpectedType {
-            function: "==",
-            argument_position: 1,
-            got: args[0].variant_name(),
-            expected: "Number"
-        }))?;
+        ).untuple_none()
+        .ok_or(NativeFnError::InvalidType(format!("{} and {}", left.variant_name(), right.variant_name())))?;
 
-        if left != right {
+        if !predicate(left, right) {
             return Ok(construct_false());
         }
-
-        left_idx += 1;
     }
 
     Ok(Any::Primitive(DataType::Boolean(true)))
+}
+
+pub fn eq<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    let items = args.iter().map(|i| cx.level_down().eval(i))
+        .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
+
+    Ok(with_comparable_window2(
+        items.as_slice(),
+        |left, right| left == right
+    )?)
+}
+
+pub fn neq<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    let Any::Primitive(DataType::Boolean(equals)) = eq(cx, args)? else { unreachable!() };
+    Ok(Any::Primitive(DataType::Boolean(!equals)))
+}
+
+pub fn gt<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    let items = args.iter().map(|i| cx.level_down().eval(i))
+        .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
+
+    Ok(with_comparable_window2(
+        items.as_slice(),
+        |left, right| left > right
+    )?)
+}
+
+pub fn ge<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    let items = args.iter().map(|i| cx.level_down().eval(i))
+        .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
+
+    Ok(with_comparable_window2(
+        items.as_slice(),
+        |left, right| left >= right
+    )?)
+}
+
+pub fn lt<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    let items = args.iter().map(|i| cx.level_down().eval(i))
+        .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
+
+    Ok(with_comparable_window2(
+        items.as_slice(),
+        |left, right| left < right
+    )?)
+}
+
+pub fn le<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    let items = args.iter().map(|i| cx.level_down().eval(i))
+        .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
+
+    Ok(with_comparable_window2(
+        items.as_slice(),
+        |left, right| left <= right
+    )?)
 }

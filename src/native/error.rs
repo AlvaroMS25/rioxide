@@ -24,7 +24,9 @@ pub enum NativeFnError {
         expected: &'static str,
     },
     #[error("Feature not yet implemented: {0}")]
-    NotYetImplemented(&'static str)
+    NotYetImplemented(&'static str),
+    #[error("Invalid type: {0}")]
+    InvalidType(String)
 }
 
 #[derive(Debug, Error)]
