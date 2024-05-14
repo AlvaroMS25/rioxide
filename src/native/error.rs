@@ -18,7 +18,13 @@ pub enum NativeFnError {
         argument_position: u8,
         got: &'static str,
         expected: &'static str
-    }
+    },
+    #[error("Invalid operands provided: {expected}")]
+    InvalidOperands {
+        expected: &'static str,
+    },
+    #[error("Feature not yet implemented: {0}")]
+    NotYetImplemented(&'static str)
 }
 
 #[derive(Debug, Error)]

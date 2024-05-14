@@ -61,8 +61,6 @@ pub fn define2<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any
         }
     };
 
-    println!("Parsed {item:?}");
-
     cx
         .vars_mut()
         .insert(&ident, Any::from(&item));
