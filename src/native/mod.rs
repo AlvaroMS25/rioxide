@@ -32,7 +32,11 @@ impl NativeStorage {
                 ">" => comparison::gt,
                 "<" => comparison::lt,
                 ">=" => comparison::ge,
-                "<=" => comparison::le
+                "<=" => comparison::le,
+                "+" => math::add,
+                "-" => math::sub,
+                "*" => math::mul,
+                "/" => math::div
             }
         }
     }

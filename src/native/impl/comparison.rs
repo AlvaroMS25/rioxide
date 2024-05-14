@@ -46,6 +46,10 @@ where
 }
 
 pub fn eq<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    if args.len() < 2 {
+        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
+    }
+
     let items = args.iter().map(|i| cx.level_down().eval(i))
         .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
 
@@ -56,11 +60,19 @@ pub fn eq<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>,
 }
 
 pub fn neq<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    if args.len() < 2 {
+        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
+    }
+
     let Any::Primitive(DataType::Boolean(equals)) = eq(cx, args)? else { unreachable!() };
     Ok(Any::Primitive(DataType::Boolean(!equals)))
 }
 
 pub fn gt<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    if args.len() < 2 {
+        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
+    }
+
     let items = args.iter().map(|i| cx.level_down().eval(i))
         .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
 
@@ -71,6 +83,10 @@ pub fn gt<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>,
 }
 
 pub fn ge<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    if args.len() < 2 {
+        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
+    }
+
     let items = args.iter().map(|i| cx.level_down().eval(i))
         .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
 
@@ -81,6 +97,10 @@ pub fn ge<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>,
 }
 
 pub fn lt<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    if args.len() < 2 {
+        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
+    }
+
     let items = args.iter().map(|i| cx.level_down().eval(i))
         .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
 
@@ -91,6 +111,10 @@ pub fn lt<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>,
 }
 
 pub fn le<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    if args.len() < 2 {
+        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
+    }
+
     let items = args.iter().map(|i| cx.level_down().eval(i))
         .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?;
 

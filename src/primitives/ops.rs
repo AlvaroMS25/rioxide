@@ -28,6 +28,13 @@ impl ComparisonOperator {
             _ => return None
         })
     }
+
+    pub fn to_datatype(self) -> DataType<'static> {
+        match self {
+            Self::Simple(s) => s.to_datatype(),
+            _ => todo!()
+        }
+    }
 }
 
 impl Add for ComparisonOperator {
@@ -110,6 +117,20 @@ pub struct RationalOrComplex {
 }
 
 pub struct NonImaginary(f64);
+
+impl NonImaginary {
+    pub fn to_datatype(self) -> DataType<'static> {
+        match self.0 {
+            num if num.fract() == 0.0 => {
+                DataType::Integer(self.0 as _)
+            },
+            num if num <= (f32::MAX as f64) => {
+                DataType::Floating(num as _)
+            },
+            other => DataType::Double(other)
+        }
+    }
+}
 
 impl Add for NonImaginary {
     type Output = Self;
