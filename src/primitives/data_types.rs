@@ -133,15 +133,21 @@ impl<'a> DataType<'a> {
     }
 
     fn parse_number(item: &'a str) -> Option<DataType<'a>> {
+        println!("Parsing number {item}");
         c!(item, "/", || Self::parse_rational(item));
+        println!("Sec");
         c!(item, "i", || Self::parse_complex(item));
+        println!("Thi");
         c!(item, "e", || Some(DataType::Double(item.parse::<f64>().ok()?)));
+        println!("For");
         c!(item, ".", || Some(DataType::Floating(item.parse::<f32>().ok()?)));
 
+        println!("Fi");
         Some(DataType::Integer(Self::take_numbers(item).parse::<i32>().ok()?))
     }
 
     fn take_numbers(item: &'a str) -> &'a str {
+        println!("Taking numbers from {item}");
         let mut buf = &item[0..1];
         let mut chars = item.char_indices().skip(1);
 
@@ -158,6 +164,7 @@ impl<'a> DataType<'a> {
 
     fn parse_complex(item: &'a str) -> Option<DataType<'a>> {
         use std::str::from_utf8;
+        println!("Complex: '{item}'");
         
         let captures = COMPLEX_REGEX.captures(item.as_bytes()).ok()??;
 
