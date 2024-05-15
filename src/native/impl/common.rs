@@ -8,21 +8,9 @@ use crate::primitives::composed::{Composed, Function};
 use crate::primitives::DataType;
 
 pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-    define2(cx, args).map(|i| Any::from(&i))
-}
-
-pub fn define2<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<AnyEval<'a>, InterpreterError> {
     if args.len() != 2 {
         return Err(NativeFnError::ArityMismatch {expected: 2, got: args.len() as _}.into());
     }
-
-    /*let ident = args[0].get_expression()
-        .map(|i| i.get_ident().map(|s| s.to_string()))
-        .flatten()
-        .ok_or(InterpreterError::NativeError(NativeFnError::IdentifierExpectedIn {
-            call: "define",
-            got: format!("{:?}", args[0])
-        }))?;*/
 
     let ident_error = |item| InterpreterError::NativeError(NativeFnError::IdentifierExpectedIn {
         call: "define",
@@ -65,5 +53,5 @@ pub fn define2<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any
         .vars_mut()
         .insert(&ident, Any::from(&item));
 
-    Ok(AnyEval::Void(()))
+    Ok(Any::Void(()))
 }

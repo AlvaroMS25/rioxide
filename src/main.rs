@@ -57,7 +57,6 @@ fn repl() -> Result<(), Box<dyn Error>> {
                 continue;
             }
         };
-        println!("{:?}", tokens);
 
         let ast_res = Ast::try_from(tokens
             .into_iter()
@@ -65,10 +64,7 @@ fn repl() -> Result<(), Box<dyn Error>> {
             .collect::<Vec<_>>()
         );
 
-        println!("{:?}", ast_res);
-        buf.clear();
-
-        /*let ast = match ast_res {
+        let ast = match ast_res {
             Ok(a) => a,
             Err(e) => {
                 eprintln!("Error parsing abstract syntax tree, error: {e}");
@@ -86,7 +82,7 @@ fn repl() -> Result<(), Box<dyn Error>> {
         println!("");
         print!("> ");
         stdout.flush()?;
-        buf.clear();*/
+        buf.clear();
     }
 
     Ok(())

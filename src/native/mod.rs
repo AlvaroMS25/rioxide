@@ -37,8 +37,10 @@ impl NativeStorage {
                 "-" => math::sub,
                 "*" => math::mul,
                 "/" => math::div,
-                "map" => fos::map::map,
-                "foldr" => fos::map::foldr
+                "map" => fos::map,
+                "foldr" => fos::foldr,
+                "foldl" => fos::foldl,
+                "filter" => fos::filter
             }
         }
     }

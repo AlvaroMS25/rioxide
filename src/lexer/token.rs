@@ -58,7 +58,6 @@ impl<'a> Token<'a> {
     }
 
     pub fn multiple(item: &'a str) -> Token<'a> {
-        println!("Parsing: {item}");
         if let Some(data) = DataType::parse(item) {
             Token::Primitive(data)
         } else {
