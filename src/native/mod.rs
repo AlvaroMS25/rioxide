@@ -36,7 +36,8 @@ impl NativeStorage {
                 "+" => math::add,
                 "-" => math::sub,
                 "*" => math::mul,
-                "/" => math::div
+                "/" => math::div,
+                "map" => fos::map::map
             }
         }
     }

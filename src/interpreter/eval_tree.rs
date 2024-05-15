@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ops::Deref};
 
-use crate::{ast::expr::{Expr, Tree}, primitives::any::Any};
+use crate::{ast::expr::{Expr, Tree}, primitives::{any::Any, composed::{Function, LambdaFunction}}};
 use crate::interpreter::any::AnyEval;
 
 use super::{context::Context, error::InterpreterError};
@@ -73,6 +73,15 @@ impl<'a> EvalTree<'a> {
         }
 
         out
+    }
+
+    pub fn try_parse_lambda(self) -> Result<LambdaFunction<'a>, InterpreterError> {
+        let fun = Function::from_lambda("lambda", self)?;
+
+        Ok(LambdaFunction {
+            arity: fun.arity,
+            body: fun.body
+        })
     }
 }
 

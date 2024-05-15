@@ -4,7 +4,7 @@ use crate::{display::InterpreterDisplay, interpreter::Interpreter, primitives::c
 
 impl InterpreterDisplay for List<'_> {
     fn fmt(&self, f: &mut dyn Write, interpreter: &Interpreter<'_>) -> fmt::Result {
-        write!(f, "(")?;
+        write!(f, "'(")?;
         let mut first = true;
 
         for i in &self.0 {

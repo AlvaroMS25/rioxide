@@ -9,6 +9,7 @@ use crate::primitives::any::Any;
 pub type NativeFn = for<'a, 'b, 'c, 'data>
     fn(&'a mut Context<'b, 'data>, &'c [AnyEval<'data>]) -> Result<Any<'data>, InterpreterError>;
 
+#[derive(Clone, Copy)]
 pub struct NativeFunction {
     fun: NativeFn
 }

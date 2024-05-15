@@ -53,6 +53,10 @@ impl<'a> Interpreter<'a> {
         unsafe { self.vars.get_mut_unchecked() }
     }
 
+    pub fn native_vars(&self) -> &NativeStorage {
+        &self.storage
+    }
+
     pub fn ast(&self) -> &Ast<'a> {
         &self.ast
     }
