@@ -43,7 +43,12 @@ impl NativeStorage {
                 "filter" => fos::filter,
                 "string?" => string::is_string,
                 "string-append" => string::string_append,
-                "make-string" => string::make_string
+                "make-string" => string::make_string,
+                "string-length" => string::len,
+                "string-ref" => string::string_ref,
+                "substring" => string::substring,
+                "string->list" => string::string_to_list,
+                "list->string" => string::list_to_string
             }
         }
     }
