@@ -150,7 +150,25 @@ macro_rules! get_enum {
     };
 }
 
-use std::collections::HashMap;
+macro_rules! require_arity {
+    (exact $arity: expr, $args: expr) => {
+        if $args.len() != $arity {
+            return Err(crate::native::error::NativeFnError::ArityMismatch {
+                got: $args.len() as _,
+                expected: $arity
+            }.into())
+        }
+    };
+    (at_least $arity: expr, $args: expr) => {
+        if $args.len() < $arity {
+            return Err(crate::native::error::NativeFnError::ArityMismatch {
+                got: $args.len() as _,
+                expected: $arity
+            }.into())
+        }
+    }
+}
+
 pub(crate) use mfn;
 pub(crate) use swm;
 pub(crate) use sw;
@@ -159,12 +177,4 @@ pub(crate) use enum_from_str;
 pub(crate) use get_enum;
 pub(crate) use hashmap;
 pub(crate) use map_native_hashmap;
-
-fn testa() -> i32 {
-    let itm = "Hello world";
-    mfn!(itm, contains, match {
-        "!" => {1},
-        "H" => {4},
-        else => { 453}
-    });
-}
+pub(crate) use require_arity;

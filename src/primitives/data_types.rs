@@ -60,7 +60,7 @@ impl<'a> DataType<'a> {
         use DataType::*;
 
         match self {
-            String(item) => len_u8buf(&item.as_ref()),
+            String(item) => len_u8buf(&item.as_ref()) + 2, // " count
             Character(item) => len_u8buf(&item.as_ref()) + 2, // #\ count
             Regex(r) => r.as_str().len(),
             Integer(i) => len_num(*i),
@@ -109,7 +109,7 @@ impl<'a> DataType<'a> {
             }
         }
 
-        Some(Cow::Borrowed(&item[..=until]))
+        Some(Cow::Borrowed(&item[1..until]))
     }
 
     fn parse_prefixed(item: &'a str) -> Option<DataType<'a>> {

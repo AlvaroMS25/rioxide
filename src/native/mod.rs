@@ -40,7 +40,10 @@ impl NativeStorage {
                 "map" => fos::map,
                 "foldr" => fos::foldr,
                 "foldl" => fos::foldl,
-                "filter" => fos::filter
+                "filter" => fos::filter,
+                "string?" => string::is_string,
+                "string-append" => string::string_append,
+                "make-string" => string::make_string
             }
         }
     }

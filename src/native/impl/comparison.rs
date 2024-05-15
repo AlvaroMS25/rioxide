@@ -17,7 +17,7 @@ where
     let construct_false = || Any::Primitive(DataType::Boolean(false));
 
     for window in items.windows(2) {
-        assert!(window.len() == 2);
+        assert_eq!(window.len(), 2);
         let (left, right) = (&window[0], &window[1]);
 
         if !left.is_primitive() || !right.is_primitive() {
