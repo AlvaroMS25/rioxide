@@ -192,7 +192,7 @@ pub fn list_to_string<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Res
             return Err(NativeFnError::InvalidType(item.variant_name().to_string()).into());
         };
 
-        buf.push_str(*&c);
+        buf.push_str(&*DataType::character_to_string(c));
     }
 
     Ok(Any::Primitive(DataType::String(Cow::Owned(buf))))

@@ -135,10 +135,17 @@ impl<'a> DataType<'a> {
         }
     }
 
-    fn character_length(item: &'a Cow<'a, str>) -> usize {
+    pub fn character_length(item: &'a Cow<'a, str>) -> usize {
         match item.as_ref() {
             "space" => 1,
             other => other.len()
+        }
+    }
+
+    pub fn character_to_string(item: &'a Cow<'a, str>) -> Cow<'a, str> {
+        match item.as_ref() {
+            "space" => Cow::Borrowed(" "),
+            other => Cow::Borrowed(&other)
         }
     }
 
