@@ -2,15 +2,14 @@ use crate::ast::expr::Expr;
 use crate::interpreter::any::AnyEval;
 use crate::interpreter::context::Context;
 use crate::interpreter::error::InterpreterError;
+use crate::macros::require_arity;
 use crate::native::error::{DeclaredFunctionError, NativeFnError};
 use crate::primitives::any::Any;
 use crate::primitives::composed::{Composed, Function};
 use crate::primitives::DataType;
 
 pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-    if args.len() != 2 {
-        return Err(NativeFnError::ArityMismatch {expected: 2, got: args.len() as _}.into());
-    }
+    require_arity!(exact 2, args);
 
     let ident_error = |item| InterpreterError::NativeError(NativeFnError::IdentifierExpectedIn {
         call: "define",

@@ -29,7 +29,7 @@ pub fn is_string<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<A
         .get_primitive()
         .map(|p| p.get_string())
         .flatten()
-        .map(|s| true)
+        .map(|_| true)
         .unwrap_or(false);
 
     Ok(Any::Primitive(DataType::Boolean(string)))

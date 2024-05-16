@@ -1,4 +1,4 @@
-use crate::{interpreter::{any::AnyEval, context::Context, error::InterpreterError}, native::error::NativeFnError, primitives::{any::Any, ops::ComparisonOperator, DataType}};
+use crate::{interpreter::{any::AnyEval, context::Context, error::InterpreterError}, macros::require_arity, native::error::NativeFnError, primitives::{any::Any, ops::ComparisonOperator, DataType}};
 
 use super::comparison::with_comparable_window2;
 
@@ -12,9 +12,7 @@ pub fn create_comparable(item: &Any<'_>) -> Result<ComparisonOperator, NativeFnE
 }
 
 pub fn add<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-    if args.len() < 2 {
-        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
-    }
+    require_arity!(at_least 2, args);
 
     let mut items = args.iter().map(|i| cx.level_down().eval(i))
         .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?.into_iter();
@@ -29,9 +27,7 @@ pub fn add<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>
 }
 
 pub fn sub<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-    if args.len() < 2 {
-        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
-    }
+    require_arity!(at_least 2, args);
 
     let mut items = args.iter().map(|i| cx.level_down().eval(i))
         .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?.into_iter();
@@ -46,9 +42,7 @@ pub fn sub<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>
 }
 
 pub fn mul<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-    if args.len() < 2 {
-        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
-    }
+    require_arity!(at_least 2, args);
 
     let mut items = args.iter().map(|i| cx.level_down().eval(i))
         .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?.into_iter();
@@ -63,9 +57,7 @@ pub fn mul<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>
 }
 
 pub fn div<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-    if args.len() < 2 {
-        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into())
-    }
+    require_arity!(at_least 2, args);
 
     let mut items = args.iter().map(|i| cx.level_down().eval(i))
         .collect::<Result<Vec<Any<'a>>, InterpreterError>>()?.into_iter();

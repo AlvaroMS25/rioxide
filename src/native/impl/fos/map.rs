@@ -1,6 +1,6 @@
 use std::collections::LinkedList;
 
-use crate::{interpreter::{any::AnyEval, context::Context, error::InterpreterError}, native::{error::NativeFnError, function::{NativeFn, NativeFunction}}, primitives::{any::Any, composed::{Composed, Function, LambdaFunction, List}}};
+use crate::{interpreter::{any::AnyEval, context::Context, error::InterpreterError}, macros::require_arity, native::{error::NativeFnError, function::{NativeFn, NativeFunction}}, primitives::{any::Any, composed::{Composed, Function, LambdaFunction, List}}};
 
 use super::super::util::*;
 
@@ -9,9 +9,7 @@ pub fn map<'a>(
     args: &[AnyEval<'a>]
 ) -> Result<Any<'a>, InterpreterError>
 {
-    if args.len() != 2 {
-        return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into());
-    }
+    require_arity!(exact 2, args);
     
     let fun = &args[0];
     let evaluated = cx.eval(&args[1])?;

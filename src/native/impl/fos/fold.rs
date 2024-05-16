@@ -1,6 +1,6 @@
 use std::collections::LinkedList;
 
-use crate::{interpreter::{any::AnyEval, context::Context, error::InterpreterError}, native::error::NativeFnError, primitives::any::Any};
+use crate::{interpreter::{any::AnyEval, context::Context, error::InterpreterError}, macros::require_arity, native::error::NativeFnError, primitives::any::Any};
 use super::super::util::*;
 
 pub fn fold_with<'a>(
@@ -9,9 +9,7 @@ pub fn fold_with<'a>(
     reverse: bool
 ) -> Result<Any<'a>, InterpreterError>
 {
-    if args.len() != 3 {
-        return Err(NativeFnError::ArityMismatch { expected: 3, got: args.len() as _ }.into());
-    }
+    require_arity!(exact 3, args);
 
     let fun = &args[0];
     let mut init = args[1].clone();
