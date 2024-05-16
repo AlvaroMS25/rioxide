@@ -160,7 +160,11 @@ pub fn string_to_list<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Res
     let mut result = LinkedList::new();
 
     for i in string.chars() {
-        result.push_back(Any::Primitive(DataType::Character(Cow::Owned(i.to_string()))));
+        result.push_back(
+            Any::Primitive(DataType::Character(
+                DataType::parse_character(&i.to_string())
+            ).make_static()
+        ));
     }
 
     Ok(Any::Composed(Box::new(Composed::List(List(result)))))

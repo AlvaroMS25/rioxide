@@ -56,12 +56,12 @@ pub struct LiteralNumber<'a> {
 } 
 
 impl<'a> DataType<'a> {
-    pub fn len(&self) -> usize {
+    pub fn len(&'a self) -> usize {
         use DataType::*;
 
         match self {
             String(item) => len_u8buf(&item.as_ref()) + 2, // " count
-            Character(item) => len_u8buf(&item.as_ref()) + 2, // #\ count
+            Character(item) => Self::character_length(item) + 2, // #\ count
             Regex(r) => r.as_str().len(),
             Integer(i) => len_num(*i),
             Rational(r) => len_num(r.left) + len_num(r.right) + 1, // +1 for "/" character
@@ -113,15 +113,33 @@ impl<'a> DataType<'a> {
     }
 
     fn parse_prefixed(item: &'a str) -> Option<DataType<'a>> {
+        println!("Item: {item:?}");
         sw!(item, "#t", || Some(DataType::Boolean(true)));
         sw!(item, "#f", || Some(DataType::Boolean(false)));
         sw!(item, "#\"", || Some(DataType::Bytes(Cow::Borrowed(&item[1..].as_bytes()))));
-        sw!(item, "#\\", || Some(DataType::Character(Cow::Borrowed(&item[2..]))));
+        sw!(item, "#\\", || Some(DataType::Character(Self::parse_character(&item[2..]))));
         sw!(item, "#x", || Some(DataType::Hex(Self::parse_literal_number(Repr::Hex, item))));
         sw!(item, "#o", || Some(DataType::Octal(Self::parse_literal_number(Repr::Octal, item))));
         sw!(item, "#b", || Some(DataType::Binary(Self::parse_literal_number(Repr::Binary, item))));
 
         None
+    }
+
+    pub fn parse_character(item: &'a str) -> Cow<'a, str> {
+        let space = item.find(" ").unwrap_or(item.len());
+        let item = &item[..space];
+
+        match item {
+            "" | " " => Cow::Owned("space".to_string()),
+            other => Cow::Borrowed(other)
+        }
+    }
+
+    fn character_length(item: &'a Cow<'a, str>) -> usize {
+        match item.as_ref() {
+            "space" => 1,
+            other => other.len()
+        }
     }
 
     fn parse_literal_number(repr: Repr, item: &'a str) -> LiteralNumber<'a> {
