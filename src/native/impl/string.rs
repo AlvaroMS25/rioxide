@@ -169,31 +169,3 @@ pub fn string_to_list<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Res
 
     Ok(Any::Composed(Box::new(Composed::List(List(result)))))
 }
-
-pub fn list_to_string<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-    require_arity!(exact 1, args);
-
-    let evaluated = cx.eval(&args[0])?;
-
-    let items = evaluated.get_composed()
-        .map(|p| p.get_list())
-        .flatten()
-        .ok_or(NativeFnError::UnexpectedType {
-            function: "list->string",
-            argument_position: 1,
-            got: evaluated.variant_name(),
-            expected: "list"
-        })?;
-
-    let mut buf = String::with_capacity(items.0.len());
-
-    for item in items.0.iter() {
-        let Any::Primitive(DataType::Character(c)) = item else {
-            return Err(NativeFnError::InvalidType(item.variant_name().to_string()).into());
-        };
-
-        buf.push_str(&*DataType::character_to_string(c));
-    }
-
-    Ok(Any::Primitive(DataType::String(Cow::Owned(buf))))
-}

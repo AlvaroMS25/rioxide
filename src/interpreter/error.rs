@@ -13,4 +13,9 @@ pub enum InterpreterError {
     DeclaredFnError(#[from] DeclaredFunctionError),
     #[error("Unknown identifier: {0}")]
     UnknownIdentifier(String),
+    #[error("Out of bounds, len is {length} but index {got} was tried to access")]
+    OutOfBounds {
+        length: usize,
+        got: usize
+    }
 }
