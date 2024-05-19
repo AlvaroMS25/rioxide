@@ -40,7 +40,7 @@ pub fn string_append<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Resu
 
     let mut first = require_string(cx, &args[0], "string-append", 1)?.to_string();
 
-    for (idx, item) in args.iter().skip(1).enumerate() {
+    for (idx, item) in args.iter().enumerate().skip(1) {
         first.push_str(&*require_string(cx, item, "string-append", idx as _)?);
     }
 

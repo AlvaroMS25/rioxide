@@ -48,7 +48,12 @@ impl NativeStorage {
                 "string-ref" => string::string_ref,
                 "substring" => string::substring,
                 "string->list" => string::string_to_list,
-                "list->string" => list::list_to_string
+                "list->string" => list::list_to_string,
+                "length" => list::len,
+                "list-ref" => list::list_ref,
+                "list-tail" => list::list_tail,
+                "append" => list::append,
+                "reverse" => list::reverse
             }
         }
     }
