@@ -34,7 +34,17 @@ pub fn cond<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a
             && *e.node.as_ref().unwrap().get_ident().unwrap() == "else";
 
         if is_else || boolean_value(cx, e.node.as_ref().unwrap())?.1 {
-            return e.shift_left().evaluate(&mut cx.level_down());
+
+            for (idx, item) in e.children.iter().enumerate() {
+                let res = cx.eval(item);
+
+                if idx == e.children.len() - 1 {
+                    return res;
+                } else {
+                    res?;
+                }
+            }
+            //return e.shift_left().evaluate(&mut cx.level_down());
         }
     }
 
