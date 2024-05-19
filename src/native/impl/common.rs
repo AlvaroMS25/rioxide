@@ -21,7 +21,7 @@ pub fn define<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<
         AnyEval::Ident(i) => i.to_string(),
         AnyEval::Expression(tree) => tree.node.as_ref().map(|n| n.get_ident())
             .flatten()
-            .ok_or(InterpreterError::DeclaredFnError(DeclaredFunctionError::InvalidExpression))?
+            .ok_or(InterpreterError::InvalidExpression)?
             .to_string(),
         _ => return Err(ident_error(&args[0]))
     };

@@ -19,5 +19,7 @@ pub enum InterpreterError {
         got: usize
     },
     #[error("{0}")]
-    Runtime(String)
+    Runtime(String),
+    #[error("Invalid expression")]
+    InvalidExpression
 }

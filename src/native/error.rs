@@ -36,6 +36,4 @@ pub enum DeclaredFunctionError {
         expected: u8,
         got: u8
     },
-    #[error("Invalid expression")]
-    InvalidExpression
 }

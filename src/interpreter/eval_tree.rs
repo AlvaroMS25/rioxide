@@ -75,6 +75,16 @@ impl<'a> EvalTree<'a> {
         out
     }
 
+    pub fn shift_left(&self) -> Self {
+        assert!(self.children.len() > 0);
+
+        let mut iter = self.children.iter().cloned();
+        Self {
+            node: Some(iter.next().unwrap()),
+            children: iter.collect()
+        }
+    }
+
     pub fn try_parse_lambda(self) -> Result<LambdaFunction<'a>, InterpreterError> {
         let fun = Function::from_lambda("lambda", self)?;
 

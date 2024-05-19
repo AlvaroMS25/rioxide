@@ -60,7 +60,9 @@ impl NativeStorage {
                 "not" => logic::not,
                 "nand" => logic::nand,
                 "nor" => logic::nor,
-                "xor" => logic::xor
+                "xor" => logic::xor,
+                "if" => branch::r#if,
+                "cond" => branch::cond
             }
         }
     }

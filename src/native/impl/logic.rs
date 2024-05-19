@@ -5,7 +5,7 @@ use crate::macros::require_arity;
 use crate::primitives::any::Any;
 use crate::primitives::DataType;
 
-fn boolean_value<'a>(cx: &mut Context<'_, 'a>, arg: &AnyEval<'a>) -> Result<(Any<'a>, bool), InterpreterError> {
+pub fn boolean_value<'a>(cx: &mut Context<'_, 'a>, arg: &AnyEval<'a>) -> Result<(Any<'a>, bool), InterpreterError> {
     match cx.level_down().eval(arg)? {
         v @ Any::Primitive(DataType::Boolean(false)) => Ok((v, false)),
         other => Ok((other, true))
