@@ -133,5 +133,9 @@ pub fn reverse<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any
         .rev()
         .collect::<LinkedList<_>>();
 
-    Ok(Any::Composed(Box::new(Composed::List(List(res)))));
+    Ok(Any::Composed(Box::new(Composed::List(List(res)))))
+}
+
+pub fn build_list<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+    todo!()
 }

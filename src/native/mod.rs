@@ -53,7 +53,8 @@ impl NativeStorage {
                 "list-ref" => list::list_ref,
                 "list-tail" => list::list_tail,
                 "append" => list::append,
-                "reverse" => list::reverse
+                "reverse" => list::reverse,
+                "build-list" => list::build_list
             }
         }
     }

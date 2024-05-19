@@ -63,3 +63,25 @@ where
         }.into())
     }
 }
+
+pub fn non_negative_int(
+    item: &AnyEval<'_>,
+    fun_name: &'static str,
+    position: u8
+) -> Result<usize, NativeFnError> {
+    Ok(*item
+        .get_primitive()
+        .map(|p| p.get_integer().map(|i| if *i >= 0 {
+            Some(i)
+        } else {
+            None
+        }))
+        .flatten()
+        .flatten()
+        .ok_or(NativeFnError::UnexpectedType {
+            function: fun_name,
+            argument_position: position,
+            got: item.variant_name(),
+            expected: "non negative integer"
+        })? as usize)
+}

@@ -2,6 +2,7 @@ use std::{borrow::Cow, collections::LinkedList};
 use crate::{interpreter::{any::AnyEval, context::Context, error::InterpreterError}, primitives::{any::Any, composed::{Composed, List}}};
 use crate::macros::require_arity;
 use crate::native::error::NativeFnError;
+use crate::native::r#impl::util::non_negative_int;
 use crate::primitives::DataType;
 
 pub fn require_string<'a>(
@@ -47,19 +48,10 @@ pub fn string_append<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Resu
     Ok(Any::Primitive(DataType::String(Cow::Owned(first))))
 }
 
-pub fn make_string<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+pub fn make_string<'a>(_: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
     require_arity!(exact 2, args);
 
-    let times = *args[0]
-        .get_primitive()
-        .map(|p| p.get_integer())
-        .flatten()
-        .ok_or(NativeFnError::UnexpectedType {
-            function: "make-string",
-            argument_position: 1,
-            got: args[0].variant_name(),
-            expected: "Integer"
-        })?;
+    let times = non_negative_int(&args[0], "make-string", 1)?;
 
     let character = args[1]
         .get_primitive()
