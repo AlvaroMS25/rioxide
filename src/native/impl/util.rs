@@ -26,7 +26,9 @@ impl<'a> Callable<'a> {
 
 pub fn callable_for<'a>(
     cx: &mut Context<'_, 'a>,
-    fun: &AnyEval<'a>
+    fun: &AnyEval<'a>,
+    fn_name: &'static str,
+    arg_pos: u8
 ) -> Result<Callable<'a>, InterpreterError>
 where
 {
@@ -54,10 +56,10 @@ where
             Ok(Callable::Lambda(e.clone().try_parse_lambda()?))
         }
         _ => return Err(NativeFnError::UnexpectedType {
-            function: "map",
-            argument_position: 1,
+            function: fn_name,
+            argument_position: arg_pos,
             got: fun.variant_name(),
-            expected: "list of function pointer"
+            expected: "lambda or function"
         }.into())
     }
 }

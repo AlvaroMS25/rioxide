@@ -23,7 +23,7 @@ pub fn map<'a>(
             expected: "list"
         })?;
 
-    let callable = callable_for(cx, fun)?;
+    let callable = callable_for(cx, fun, "map", 1)?;
 
     let mut result = LinkedList::new();
 

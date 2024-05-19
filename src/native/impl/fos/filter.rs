@@ -9,7 +9,7 @@ pub fn filter<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<
         return Err(NativeFnError::ArityMismatch { expected: 2, got: args.len() as _ }.into());
     }
 
-    let fun = callable_for(cx, &args[0])?;
+    let fun = callable_for(cx, &args[0], "filter", 1)?;
 
     let evaluated = cx.eval(&args[1])?;
     let items = evaluated.get_composed()

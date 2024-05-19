@@ -26,7 +26,7 @@ pub fn fold_with<'a>(
             expected: "list"
         })?;
 
-    let callable = callable_for(cx, fun)?;
+    let callable = callable_for(cx, fun, if reverse { "foldr" } else { "foldl" }, 1)?;
 
     if let Some(arity) = callable.arity() {
         if arity != 2 {
