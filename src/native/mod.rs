@@ -54,7 +54,13 @@ impl NativeStorage {
                 "list-tail" => list::list_tail,
                 "append" => list::append,
                 "reverse" => list::reverse,
-                "build-list" => list::build_list
+                "build-list" => list::build_list,
+                "and" => logic::and,
+                "or" => logic::or,
+                "not" => logic::not,
+                "nand" => logic::nand,
+                "nor" => logic::nor,
+                "xor" => logic::xor
             }
         }
     }
