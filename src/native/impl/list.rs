@@ -3,6 +3,7 @@ use std::collections::LinkedList;
 
 use crate::{interpreter::{any::AnyEval, context::Context, error::InterpreterError}, macros::require_arity, native::error::NativeFnError, primitives::{any::Any, composed::{Composed, List}, DataType}};
 use crate::ext::LinkedListExt;
+use crate::native::r#impl::util::{callable_for, non_negative_int};
 
 pub fn require_list<'a>(
     cx: &mut Context<'_, 'a>,
@@ -137,5 +138,15 @@ pub fn reverse<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any
 }
 
 pub fn build_list<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
-    todo!()
+    require_arity!(exact 2, args);
+    let n = non_negative_int(cx, &args[0], "build-list", 1)?;
+    let callable = callable_for(cx, &args[1], "build-list", 2)?;
+
+    let mut list = LinkedList::new();
+
+    for i in 0..n {
+        list.push_back(callable.call(cx, &[AnyEval::Primitive(DataType::Integer(i as i32))])?);
+    }
+
+    Ok(Any::Composed(Box::new(Composed::List(List(list)))))
 }

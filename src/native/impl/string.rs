@@ -48,10 +48,10 @@ pub fn string_append<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Resu
     Ok(Any::Primitive(DataType::String(Cow::Owned(first))))
 }
 
-pub fn make_string<'a>(_: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
+pub fn make_string<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
     require_arity!(exact 2, args);
 
-    let times = non_negative_int(&args[0], "make-string", 1)?;
+    let times = non_negative_int(cx, &args[0], "make-string", 1)?;
 
     let character = args[1]
         .get_primitive()
@@ -85,21 +85,7 @@ pub fn string_ref<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<
     require_arity!(exact 2, args);
 
     let string = require_string(cx, &args[0], "string-ref", 1)?;
-    let index = *args[1]
-        .get_primitive()
-        .map(|p| p.get_integer().map(|i| if *i >= 0 {
-            Some(i)
-        } else {
-            None
-        }))
-        .flatten()
-        .flatten()
-        .ok_or(NativeFnError::UnexpectedType {
-            function: "string-ref",
-            argument_position: 1,
-            got: args[1].variant_name(),
-            expected: "non negative integer"
-        })? as usize;
+    let index = non_negative_int(cx, &args[1], "string-ref", 2)?;
 
     Ok(Any::Primitive(DataType::Character(Cow::Owned(string[index..index+1].to_string()))))
 }
@@ -108,22 +94,7 @@ pub fn substring<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<A
     require_arity!(exact 3, args);
 
     let string = require_string(cx, &args[0], "substring", 1)?;
-
-    let start = *args[1]
-        .get_primitive()
-        .map(|p| p.get_integer().map(|i| if *i >= 0 {
-            Some(i)
-        } else {
-            None
-        }))
-        .flatten()
-        .flatten()
-        .ok_or(NativeFnError::UnexpectedType {
-            function: "string-ref",
-            argument_position: 1,
-            got: args[1].variant_name(),
-            expected: "non negative integer"
-        })? as usize;
+    let start = non_negative_int(cx, &args[1], "substring", 2)?;
 
     let end = args[2]
         .get_primitive()
@@ -135,6 +106,12 @@ pub fn substring<'a>(cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<A
         .flatten()
         .flatten()
         .map(|i| *i as usize);
+
+    if let Some(end) = end {
+        if end < start {
+            return Err(InterpreterError::Runtime(String::from("End is less than start")));
+        }
+    }
 
     let res = if let Some(end) = end {
         string[start..end].to_string()

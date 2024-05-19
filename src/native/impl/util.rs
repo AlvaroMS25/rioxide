@@ -9,9 +9,9 @@ pub enum Callable<'a> {
 impl<'a> Callable<'a> {
     pub fn call(&self, cx: &mut Context<'_, 'a>, args: &[AnyEval<'a>]) -> Result<Any<'a>, InterpreterError> {
         match self {
-            Self::Lambda(l) => l.body.call(cx, args),
-            Self::Function(f) => f.body.call(cx, args),
-            Self::Native(n) => n.call(cx, args)
+            Self::Lambda(l) => l.body.call(&mut cx.level_down(), args),
+            Self::Function(f) => f.body.call(&mut cx.level_down(), args),
+            Self::Native(n) => n.call(&mut cx.level_down(), args)
         }
     }
 
@@ -64,12 +64,13 @@ where
     }
 }
 
-pub fn non_negative_int(
-    item: &AnyEval<'_>,
+pub fn non_negative_int<'a>(
+    cx: &mut Context<'_, 'a>,
+    item: &AnyEval<'a>,
     fun_name: &'static str,
     position: u8
-) -> Result<usize, NativeFnError> {
-    Ok(*item
+) -> Result<usize, InterpreterError> {
+    Ok(*cx.eval(item)?
         .get_primitive()
         .map(|p| p.get_integer().map(|i| if *i >= 0 {
             Some(i)

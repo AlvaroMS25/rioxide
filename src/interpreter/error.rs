@@ -17,5 +17,7 @@ pub enum InterpreterError {
     OutOfBounds {
         length: usize,
         got: usize
-    }
+    },
+    #[error("{0}")]
+    Runtime(String)
 }
