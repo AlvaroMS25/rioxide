@@ -113,7 +113,6 @@ impl<'a> DataType<'a> {
     }
 
     fn parse_prefixed(item: &'a str) -> Option<DataType<'a>> {
-        println!("Item: {item:?}");
         sw!(item, "#t", || Some(DataType::Boolean(true)));
         sw!(item, "#f", || Some(DataType::Boolean(false)));
         sw!(item, "#\"", || Some(DataType::Bytes(Cow::Borrowed(&item[1..].as_bytes()))));
